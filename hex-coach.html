@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gift Coach</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#141414;--panel:#1d1d1d;--line:#2e2e2e;--text:#ece6d6;--muted:#9a937f;
+  --gold:#e8b437;--gold-d:#a8791a;--gold-l:#f6d77c;
+  --best:#5fd38a;--err:#f0997b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:820px;margin:0 auto;padding:20px 16px 40px}
+h1{margin:0 0 4px;font-size:22px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-align:center}
+.sub{margin:0 0 16px;text-align:center;color:var(--muted);font-size:13px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.chips,.btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:14px}
+.chip b{color:var(--gold);font-variant-numeric:tabular-nums}
+.chip.mode b{color:var(--best)}
+button.btn{font:inherit;font-size:14px;cursor:pointer;border-radius:8px;padding:7px 14px;border:1px solid var(--gold-d);background:transparent;color:var(--gold-l)}
+button.btn:hover:not(:disabled){background:#2a2310}
+button.btn:disabled{opacity:.4;cursor:default}
+button.btn.ghost{border-color:var(--line);color:var(--muted)}
+button.btn.ghost:hover:not(:disabled){color:var(--text);background:#222}
+button.btn.primary{background:var(--gold);color:#2a1d02;border-color:var(--gold);font-weight:600}
+button.btn.primary:hover:not(:disabled){background:var(--gold-l)}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+label.tog{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+
+.advrow{display:flex;justify-content:center;margin-bottom:10px}
+button.btn.big{font-size:16px;padding:10px 22px}
+.advice{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--best);border-radius:10px;padding:12px 14px;margin-bottom:14px;min-height:52px}
+.advice.err{border-left-color:var(--err)}
+.advice.done{border-left-color:var(--gold)}
+.advice.setup{border-left-color:var(--muted)}
+.advice p{margin:0}
+.advice .hint{color:var(--muted);font-size:13px;margin-top:4px}
+.advice b{color:var(--gold-l)}
+
+/* Board — same look as the original: hidden = gold, opened = dark */
+.board{position:relative;width:100%;aspect-ratio:9 / 4.6188;margin:0 auto;user-select:none;-webkit-user-select:none}
+.tile{position:absolute;width:11.111%;height:25%;padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tile:focus-visible{outline:none}
+.tile .hex,.tile .face{position:absolute;inset:3.5%;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.tile .face{inset:9%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-weight:800;font-size:clamp(14px,3.6vw,30px);line-height:1}
+.tile .pct{font-size:clamp(9px,1.6vw,13px);font-weight:600;font-variant-numeric:tabular-nums}
+.tile.H .hex{background:var(--gold)}
+.tile.H .face{background:#4a3712;color:var(--gold-l)}
+.tile.H:hover .hex,.tile.H:focus-visible .hex{background:var(--gold-l)}
+.tile.E .hex,.tile.X .hex,.tile.W .hex{background:#303030}
+.tile.E .face,.tile.X .face,.tile.W .face{background:#1f1f1f}
+.tile.X .face{color:#6a6a6a;font-weight:400}
+.tile.W .face{color:var(--gold)}
+.tile.G .hex{background:var(--gold-l)} .tile.G .face{background:var(--gold)}
+.tile.G svg{width:52%;height:52%}
+.tile.C .hex{background:var(--gold-l)}
+.tile.C .face{background:#1f1f1f;color:var(--gold)}
+@media (prefers-reduced-motion:no-preference){.tile.C .hex{animation:pulse .9s ease-in-out infinite}}
+.tile.zero .pct{opacity:.4}
+.tile.best .hex{background:var(--best)}
+.tile.best .face{background:#173d26;color:#c8f2d5}
+.tile.sel .hex{background:#fff}
+.tile.fixed{cursor:default}
+@media (prefers-reduced-motion:no-preference){.tile.best .hex{animation:pulse 1.2s ease-in-out infinite}}
+@keyframes pulse{50%{opacity:.55}}
+
+.act{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:14px;min-height:56px}
+.act .lbl{font-size:14px;color:var(--muted);margin-right:4px}
+.act .lbl b{color:var(--text)}
+.act button.opt{font:inherit;font-size:15px;cursor:pointer;border-radius:8px;padding:8px 16px;border:1px solid var(--line);background:#181818;color:var(--text)}
+.act button.opt:hover:not(:disabled){border-color:var(--gold-d)}
+.act button.opt:disabled{opacity:.3;cursor:not-allowed;text-decoration:line-through}
+.act button.opt.g{border-color:var(--gold);color:var(--gold-l)}
+.act button.opt.w{color:var(--gold)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:12px;font-size:12px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.help{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--muted)}
+.help h2{margin:0 0 8px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.help ol{margin:0;padding-left:20px}
+.help li{margin:3px 0}
+.help b{color:var(--text)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<main>
+  <h1>Gift coach</h1>
+  <p class="sub">Copy your game here, enter what each click shows, and the Advisor tells you the best next click. Or practise on a random board.</p>
+
+  <div class="bar">
+    <div class="chips">
+      <div class="chip mode">Mode <b id="modeLbl">Set-up</b></div>
+      <div class="chip">Clicks <b id="clicks">0</b></div>
+      <div class="chip">Gifts <b id="found">0</b>/3</div>
+    </div>
+    <div class="btns">
+      <label class="tog"><input type="checkbox" id="heat"> Show chances</label>
+      <button class="btn ghost" id="undoBtn" type="button">Undo</button>
+      <button class="btn ghost" id="editBtn" type="button">Edit board</button>
+      <button class="btn ghost" id="newBtn" type="button">New board</button>
+      <button class="btn" id="randBtn" type="button">Random game</button>
+    </div>
+  </div>
+
+  <div class="advrow">
+    <button class="btn primary big" id="advBtn" type="button">Advisor: where should I click?</button>
+  </div>
+  <div class="advice" id="advice" role="status" aria-live="polite"></div>
+
+  <div class="board" id="board" aria-label="Game board"></div>
+
+  <div class="act" id="act"></div>
+
+  <div class="legend">
+    <span style="--c:var(--gold)">Hidden</span>
+    <span style="--c:var(--best)">Best next click</span>
+    <span style="--c:#303030">Opened / ✕ start tile</span>
+    <span style="--c:var(--gold-l)">Gift / !? to check</span>
+  </div>
+
+  <section class="help">
+    <h2>How to use</h2>
+    <ol>
+      <li><b>Set the two ✕ tiles first.</b> Tap the two tiles that show ✕ in your game. They are never on the edge.</li>
+      <li><b>Game already in progress?</b> Still in set-up, tap each opened tile: once for <b>opened (dark)</b>, twice for <b>!</b>, three times for <b>gift</b>, four times to hide it again.</li>
+      <li>Press <b>Start coaching</b>, then <b>Advisor</b>. Click the green tile in your game.</li>
+      <li>Tap the same tile here and choose what it showed: <b>Gift</b>, <b>!</b>, or <b>Opened</b>. Opened also opens its hidden neighbours here, the same as in your game.</li>
+      <li><b>Gift found:</b> the <b>!</b> tiles next to it flash as <b>!?</b>. Tap each one and say whether your game still shows <b>!</b> or a plain tile. A <b>!</b> disappears once every gift around it is found.</li>
+      <li>Wrong entry? Press <b>Undo</b>.</li>
+      <li><b>Random game:</b> practise here without another game. The tiles answer by themselves; use <b>Advisor</b> whenever you want a hint.</li>
+    </ol>
+  </section>
+  <p class="sr" id="live" aria-live="polite"></p>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const ROWS = 5, COLS = 17, GIFTS = 3, XTILES = 2;
+  const GIFT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#5a3d05" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>';
+  const $ = id => document.getElementById(id);
+
+  /* ---------- Geometry ---------- */
+  const pos = [], byPos = new Map();
+  for (let r = 1; r <= ROWS; r++) for (let c = (r % 2 === 0 ? 1 : 2); c <= COLS; c += 2) { byPos.set(r * 100 + c, pos.length); pos.push([r, c]); }
+  const N = pos.length;
+  const nb = pos.map(([r, c]) => [[0, -2], [0, 2], [-1, -1], [-1, 1], [1, -1], [1, 1]]
+    .map(([a, b]) => byPos.get((r + a) * 100 + c + b)).filter(x => x !== undefined));
+  const interior = i => nb[i].length === 6;
+  const name = i => `row ${pos[i][0]}, column ${pos[i][1]}`;
+
+  /* ---------- State ----------
+     st[i]: H hidden | X start tile | G gift | W "!" | C "!" to re-check after a nearby gift | E opened
+     obs:   clicked tiles that showed "!" (w:true) or later turned dark (w:false),
+            with the set of tiles that could still hold a hidden gift at that moment */
+  let S;
+  const fresh = () => ({ st: new Array(N).fill('H'), obs: [], clicks: 0, mode: 'setup' });
+  function randomBoard() {
+    const R = fresh();
+    R.mode = 'practice';
+    const inner = [...Array(N).keys()].filter(interior);
+    for (let k = 0; k < XTILES; k++) R.st[inner.splice(Math.floor(Math.random() * inner.length), 1)[0]] = 'X';
+    const pool = [...Array(N).keys()].filter(i => R.st[i] !== 'X');
+    R.secret = [];
+    for (let k = 0; k < GIFTS; k++) R.secret.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    return R;
+  }
+  const hist = [];
+  let sel = -1, setupBackup = null, showAdv = false;
+
+  const snapshot = () => JSON.stringify(S);
+  const hiddenNow = () => S.st.reduce((a, s, i) => (s === 'H' && a.push(i), a), []);
+  const count = s => S.st.filter(x => x === s).length;
+
+  /* ---------- Solver ---------- */
+  function configs() {
+    const F = [], cand = [];
+    S.st.forEach((s, i) => { if (s === 'G') F.push(i); else if (s === 'H') cand.push(i); });
+    const k = GIFTS - F.length;
+    if (k < 0) return [];
+    const obs = S.obs.map(o => ({ t: o.t, w: o.w, snap: new Set(o.snap) }));
+    const forbid = new Set();
+    obs.forEach(o => { if (!o.w) nb[o.t].forEach(n => { if (o.snap.has(n)) forbid.add(n); }); });
+    const C = cand.filter(i => !forbid.has(i));
+    const out = [], ch = [];
+    const ok = set => obs.every(o => nb[o.t].some(n => set.has(n) && o.snap.has(n)) === o.w);
+    (function rec(st) {
+      if (ch.length === k) { const set = new Set(F.concat(ch)); if (ok(set)) out.push(set); return; }
+      for (let j = st; j < C.length; j++) { ch.push(C[j]); rec(j + 1); ch.pop(); }
+    })(0);
+    return out;
+  }
+
+  // What the player sees after clicking t if the gifts are `set`: gift, "!", or opened.
+  function outcome(t, set, H) {
+    if (set.has(t)) return 'G';
+    return nb[t].some(n => n !== t && set.has(n) && H.has(n)) ? 'W' : 'E';
+  }
+
+  function advise() {
+    const cf = configs();
+    if (!cf.length) return { err: true };
+    const H = hiddenNow();
+    const cnt = new Map(H.map(i => [i, 0]));
+    cf.forEach(s => s.forEach(i => { if (cnt.has(i)) cnt.set(i, cnt.get(i) + 1); }));
+    let m = -1, tied = [];
+    cnt.forEach((v, i) => { if (v > m) { m = v; tied = [i]; } else if (v === m) tied.push(i); });
+    let best = tied[0];
+    if (tied.length > 1) {
+      const Hs = new Set(H);
+      let score = Infinity;
+      for (const t of tied) {
+        // expected number of layouts left after the click (smaller = more informative)
+        const h = { G: 0, W: 0, E: 0 };
+        cf.forEach(s => { h[outcome(t, s, Hs)]++; });
+        const e = h.G * h.G + h.W * h.W + h.E * h.E;
+        if (e < score) { score = e; best = t; }
+      }
+    }
+    const prob = new Map(); cnt.forEach((v, i) => prob.set(i, v / cf.length));
+    return { best, prob, layouts: cf.length };
+  }
+
+  // Which results are still possible for tile t, given everything entered so far.
+  function possibleResults(t) {
+    const cf = configs();
+    if (!cf.length) return null;               // board already inconsistent
+    const H = new Set(hiddenNow());
+    const near = s => nb[t].some(n => s.has(n) && H.has(n));
+    if (S.st[t] === 'H') return {
+      G: cf.some(s => s.has(t)),
+      W: cf.some(s => !s.has(t) && near(s)),
+      E: cf.some(s => !s.has(t) && !near(s))
+    };
+    return { W: cf.some(near), E: cf.some(s => !near(s)) };
+  }
+
+  /* ---------- Board DOM ---------- */
+  const tiles = pos.map((p, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tile H';
+    b.style.left = ((p[1] - 1) * 100 / 18) + '%';
+    b.style.top = ((p[0] - 1) * 18.75) + '%';
+    b.innerHTML = '<span class="hex"></span><span class="face"></span>';
+    b.dataset.i = i;
+    $('board').appendChild(b);
+    return b;
+  });
+
+  /* ---------- Actions ---------- */
+  let lastMsg = null;
+  const msg = (kind, html, hint) => { lastMsg = { kind, html, hint }; };
+  function commit(fn) { hist.push(snapshot()); fn(); sel = -1; showAdv = false; render(); }
+
+  function enter(i, res) {
+    const s = S.st[i];
+    const ok = possibleResults(i);
+    if (ok && ok[res] === false) { msg('err', 'That result is not possible here.', 'Check what your game shows. If an earlier entry was wrong, use Undo.'); render(); return; }
+    if (s === 'H') {
+      commit(() => {
+        S.clicks++;
+        S.st[i] = res;
+        if (res === 'G' && count('G') < GIFTS) nb[i].forEach(n => { if (S.st[n] === 'W') S.st[n] = 'C'; });
+        if (res === 'W') S.obs.push({ t: i, w: true, snap: hiddenNow() });
+        if (res === 'E') {
+          S.obs.push({ t: i, w: false, snap: hiddenNow() });
+          nb[i].forEach(n => { if (S.st[n] === 'H') S.st[n] = 'E'; });
+        }
+      });
+    } else if ((s === 'W' || s === 'C') && (res === 'E' || res === 'W')) {
+      // The game removes a "!" once every gift around it is found.
+      // Still "!" = another hidden gift is next to it; plain = none left around it.
+      commit(() => { S.st[i] = res; S.obs.push({ t: i, w: res === 'W', snap: hiddenNow() }); });
+    }
+  }
+
+  // Practice: the board answers by the real rules, including "!" going plain after its gifts are found.
+  function practiceClick(i) {
+    if (S.st[i] !== 'H') return;
+    const gift = new Set(S.secret);
+    const hiddenGiftNear = t => nb[t].some(n => gift.has(n) && S.st[n] === 'H');
+    commit(() => {
+      S.clicks++;
+      if (gift.has(i)) {
+        S.st[i] = 'G';
+        nb[i].forEach(n => {
+          if (S.st[n] !== 'W') return;
+          const still = hiddenGiftNear(n);
+          if (!still) S.st[n] = 'E';
+          S.obs.push({ t: n, w: still, snap: hiddenNow() });
+        });
+      } else {
+        S.st[i] = 'W';
+        const near = hiddenGiftNear(i);
+        if (!near) S.st[i] = 'E';
+        S.obs.push({ t: i, w: near, snap: hiddenNow() });
+        if (!near) nb[i].forEach(n => { if (S.st[n] === 'H') S.st[n] = 'E'; });
+      }
+    });
+  }
+
+  function setupTap(i) {
+    const s = S.st[i], xs = count('X');
+    let next;
+    if (s === 'X') next = 'H';
+    else if (xs < XTILES) {
+      if (s !== 'H') next = 'H';
+      else if (!interior(i)) { msg('err', 'The ✕ tiles are never on the edge.', 'Tap the two ✕ tiles from your game; they are inside the board.'); render(); return; }
+      else next = 'X';
+    } else next = { H: 'E', E: 'W', W: 'G', G: 'H' }[s];
+    commit(() => { S.st[i] = next; });
+  }
+
+  function startCoaching() {
+    if (count('X') !== XTILES) { msg('err', 'Set both ✕ tiles first.', 'Tap the two ✕ tiles from your game.'); render(); return; }
+    if (count('G') > GIFTS) { msg('err', `You marked ${count('G')} gifts. There are only 3.`, ''); render(); return; }
+    const trial = JSON.parse(snapshot());
+    const snap0 = hiddenNow();
+    S.obs = [];
+    S.st.forEach((s, i) => { if (s === 'W') S.obs.push({ t: i, w: true, snap: snap0 }); });
+    const feasible = configs().length > 0;
+    S = trial;
+    if (!feasible) { msg('err', 'This board is not possible.', 'Every ! needs at least one gold tile next to it, and gifts cannot be hidden under opened tiles. Check the board against your game.'); render(); return; }
+    commit(() => {
+      // A "!" on screen means a still-hidden gift is next to it right now.
+      const snap = hiddenNow();
+      S.obs = [];
+      S.st.forEach((s, i) => { if (s === 'W') S.obs.push({ t: i, w: true, snap }); });
+      S.mode = 'play';
+      setupBackup = null;
+    });
+  }
+
+  /* ---------- Rendering ---------- */
+  function render() {
+    const practice = S.mode === 'practice';
+    const play = S.mode === 'play' || practice;
+    const found = count('G');
+    const done = play && found === GIFTS;
+    const xs = count('X');
+    const checks = count('C');
+    const heat = $('heat').checked;
+    // Chances are shown whenever "Show chances" is on; the green best tile only after pressing Advisor.
+    const adv = (play && !done && !checks && (showAdv || heat)) ? advise() : null;
+
+    tiles.forEach((b, i) => {
+      const s = S.st[i];
+      let cls = 'tile ' + s, html = '', label = name(i);
+      if (s === 'G') { html = GIFT_SVG; label += ', gift'; }
+      else if (s === 'W') { html = '!'; label += ', gift nearby'; }
+      else if (s === 'C') { html = '!?'; label += ', check: still ! in your game?'; }
+      else if (s === 'E') { label += ', opened'; }
+      else if (s === 'X') { html = '✕'; label += ', start tile'; }
+      else {
+        label += ', hidden';
+        if (adv && !adv.err) {
+          const p = adv.prob.get(i) || 0;
+          if (heat) html = `<span class="pct">${Math.round(p * 100)}%</span>`;
+          if (p === 0) cls += ' zero';
+          if (showAdv && i === adv.best) { cls += ' best'; label += ', best next click'; }
+          label += `, ${Math.round(p * 100)}% gift chance`;
+        }
+      }
+      const clickable = !play || s === 'H' || (!practice && (s === 'W' || s === 'C'));
+      if (!clickable || done) cls += ' fixed';
+      if (i === sel) cls += ' sel';
+      b.className = cls;
+      const face = b.querySelector('.face');
+      if (face.innerHTML !== html) face.innerHTML = html;
+      b.setAttribute('aria-label', label);
+    });
+
+    const A = $('advice');
+    let kind, html, hint = '';
+    if (lastMsg) { ({ kind, html, hint } = lastMsg); lastMsg = null; }
+    else if (!play && xs < XTILES) {
+      kind = 'setup';
+      html = `Tap the <b>${XTILES - xs}</b> ✕ tile${XTILES - xs === 1 ? '' : 's'} still missing from your game.`;
+      hint = 'The two ✕ tiles are empty from the start and never on the edge.';
+    } else if (!play) {
+      kind = 'setup';
+      html = 'Both ✕ tiles set. Press <b>Start coaching</b>.';
+      hint = 'Game already in progress? First copy the opened tiles: tap once for opened, twice for !, three times for gift, four times to hide again.';
+    } else if (done) {
+      kind = 'done';
+      html = `All 3 gifts found in <b>${S.clicks}</b> click${S.clicks === 1 ? '' : 's'}.`;
+      hint = practice ? 'Perfect play averages about 10.4 clicks. Press Random game to play again.' : 'Press New board for the next game.';
+    } else if (checks) {
+      kind = '';
+      html = `Gift found! Check the <b>${checks}</b> flashing <b>!?</b> tile${checks === 1 ? '' : 's'} next to it.`;
+      hint = 'Tap each one: does your game still show ! there, or is it now a plain tile?';
+    } else if (!adv || (!showAdv && !adv.err)) {
+      kind = 'setup';
+      html = practice
+        ? 'Click any gold tile, or press <b>Advisor</b> for the best one.'
+        : 'Press <b>Advisor</b> for the next click, or tap the tile you clicked and enter its result.';
+    } else if (adv.err) {
+      kind = 'err';
+      html = 'These results don’t fit any possible gift layout.';
+      hint = 'One of the entries is probably wrong. Use Undo or compare the board with your game.';
+    } else {
+      kind = '';
+      const p = adv.prob.get(adv.best);
+      html = `Click <b>${name(adv.best)}</b>` + (p >= 0.9999 ? ' — a gift is certainly there.' : ` — ${Math.round(p * 100)}% gift chance.`);
+      hint = `${adv.layouts} possible gift layout${adv.layouts === 1 ? '' : 's'} left.`;
+    }
+    A.className = 'advice ' + kind;
+    A.innerHTML = `<p>${html}</p>` + (hint ? `<p class="hint">${hint}</p>` : '');
+    $('live').textContent = A.textContent;
+
+    const ok = (play && !practice && sel >= 0) ? possibleResults(sel) : null;
+    const opt = (cls, res, txt) => {
+      const no = ok && ok[res] === false;
+      return `<button type="button" class="opt ${cls}" data-res="${res}"${no ? ' disabled title="Not possible with what is already on the board"' : ''}>${txt}</button>`;
+    };
+    let a = '';
+    if (!play) {
+      a = `<span class="lbl">${xs < XTILES ? 'Tap the ✕ tiles.' : 'Tap: 1× opened, 2× !, 3× gift, 4× hidden. Tap a ✕ to move it.'}</span>` +
+        '<span style="flex:1"></span>' +
+        (setupBackup ? '<button type="button" class="btn ghost" id="cancelSetup">Cancel</button>' : '') +
+        `<button type="button" class="btn primary" id="startBtn"${xs === XTILES ? '' : ' disabled'}>Start coaching</button>`;
+    } else if (practice) {
+      a = `<span class="lbl">${done ? 'Game finished.' : 'Random game: click gold tiles to open them.'}</span>`;
+    } else if (sel < 0) {
+      a = `<span class="lbl">${done ? 'Game finished.' : 'Tap the tile you clicked in your game to enter its result.'}</span>`;
+    } else {
+      a = `<span class="lbl">Tile <b>${name(sel)}</b> showed:</span>`;
+      if (S.st[sel] === 'H') a += opt('g', 'G', 'Gift') + opt('w', 'W', '!') + opt('', 'E', 'Opened (dark)');
+      else if (S.st[sel] === 'C') a += opt('w', 'W', 'Still !') + opt('', 'E', 'Now plain');
+      else a += opt('', 'E', 'Now plain');
+      a += '<button type="button" class="opt" data-res="x">Cancel</button>';
+      if (ok && Object.values(ok).includes(false)) a += '<span class="lbl" style="flex-basis:100%;margin:2px 0 0">Crossed-out results are impossible with what is already on the board.</span>';
+    }
+    $('act').innerHTML = a;
+
+    $('modeLbl').textContent = practice ? 'Random game' : play ? 'Coach' : 'Set-up';
+    $('clicks').textContent = S.clicks;
+    $('found').textContent = found;
+    $('undoBtn').disabled = !hist.length;
+    $('editBtn').disabled = !play || practice;
+    $('advBtn').disabled = !play || done || checks > 0;
+  }
+
+  /* ---------- Events ---------- */
+  $('board').addEventListener('click', e => {
+    const b = e.target.closest('.tile'); if (!b) return;
+    const i = +b.dataset.i, s = S.st[i];
+    if (S.mode === 'setup') { setupTap(i); tiles[i].focus(); return; }
+    if (S.mode === 'practice') { if (count('G') < GIFTS) { practiceClick(i); tiles[i].focus(); } return; }
+    if (count('G') === GIFTS) return;
+    if (count('C') && s !== 'C') { msg('', 'First check the flashing <b>!?</b> tiles.', 'Tap each one: still ! in your game, or now plain?'); sel = -1; render(); return; }
+    sel = (s === 'H' || s === 'W' || s === 'C') && sel !== i ? i : -1;
+    render();
+    if (sel >= 0) { const f = $('act').querySelector('button.opt'); if (f) f.focus(); }
+  });
+  $('act').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'startBtn') { startCoaching(); return; }
+    if (b.id === 'cancelSetup') { S = JSON.parse(setupBackup); setupBackup = null; sel = -1; render(); return; }
+    const res = b.dataset.res; if (!res) return;
+    const t = sel;
+    if (res === 'x') { sel = -1; render(); } else enter(t, res);
+    if (t >= 0) tiles[t].focus();
+  });
+  $('undoBtn').addEventListener('click', () => { if (!hist.length) return; S = JSON.parse(hist.pop()); sel = -1; showAdv = false; render(); });
+  // In-page confirmation (browser pop-ups are blocked in many previews and embeds)
+  function confirmClick(btn, needed, run) {
+    if (!needed || btn.dataset.armed) {
+      clearTimeout(btn._t); delete btn.dataset.armed;
+      if (btn.dataset.label) btn.textContent = btn.dataset.label;
+      run(); return;
+    }
+    btn.dataset.label = btn.textContent;
+    btn.dataset.armed = '1';
+    btn.textContent = 'Click again to confirm';
+    btn._t = setTimeout(() => { delete btn.dataset.armed; btn.textContent = btn.dataset.label; }, 3000);
+  }
+  const unfinished = () => hist.length > 0 && !(S.mode !== 'setup' && count('G') === GIFTS);
+  $('newBtn').addEventListener('click', e => confirmClick(e.currentTarget, unfinished(), () => {
+    S = fresh(); hist.length = 0; sel = -1; setupBackup = null; showAdv = false; render();
+  }));
+  $('randBtn').addEventListener('click', e => confirmClick(e.currentTarget, unfinished(), () => {
+    S = randomBoard(); hist.length = 0; sel = -1; setupBackup = null; showAdv = false; render();
+  }));
+  $('editBtn').addEventListener('click', () => { setupBackup = snapshot(); commit(() => { S.mode = 'setup'; S.st = S.st.map(x => x === 'C' ? 'W' : x); }); });
+  $('heat').addEventListener('change', render);
+  $('advBtn').addEventListener('click', () => { showAdv = true; sel = -1; render(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && sel >= 0) { sel = -1; render(); } });
+
+  S = fresh();
+  render();
+})();
+</script>
+</body>
+</html>
