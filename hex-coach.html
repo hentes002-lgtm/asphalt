@@ -20,7 +20,11 @@ h1{margin:0 0 4px;font-size:22px;font-weight:600;letter-spacing:.12em;text-trans
 .chips,.btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .chip{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:14px}
 .chip b{color:var(--gold);font-variant-numeric:tabular-nums}
-.chip.mode b{color:var(--best)}
+.seg{display:inline-flex;border:1px solid var(--gold-d);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:14px;cursor:pointer;padding:6px 14px;border:0;background:transparent;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--gold-d)}
+.seg button[aria-pressed="true"]{background:var(--gold);color:#2a1d02;font-weight:600}
+.seg button:hover:not([aria-pressed="true"]){color:var(--text);background:#222}
 button.btn{font:inherit;font-size:14px;cursor:pointer;border-radius:8px;padding:7px 14px;border:1px solid var(--gold-d);background:transparent;color:var(--gold-l)}
 button.btn:hover:not(:disabled){background:#2a2310}
 button.btn:disabled{opacity:.4;cursor:default}
@@ -29,11 +33,65 @@ button.btn.ghost:hover:not(:disabled){color:var(--text);background:#222}
 button.btn.primary{background:var(--gold);color:#2a1d02;border-color:var(--gold);font-weight:600}
 button.btn.primary:hover:not(:disabled){background:var(--gold-l)}
 button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button{-webkit-tap-highlight-color:transparent}
 label.tog{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
 
-.advrow{display:flex;justify-content:center;margin-bottom:10px}
-button.btn.big{font-size:16px;padding:10px 22px}
-.advice{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--best);border-radius:10px;padding:12px 14px;margin-bottom:14px;min-height:52px}
+.advrow{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+button.heatbtn{font:inherit;font-size:16px;font-weight:600;cursor:pointer;border-radius:8px;padding:9px 18px;border:2px solid var(--gold);background:transparent;color:var(--gold-l);display:inline-flex;align-items:center;gap:8px}
+button.heatbtn:hover{background:#2a2310}
+button.heatbtn .sw{width:30px;height:16px;border-radius:8px;background:#3a3a3a;position:relative;transition:background .15s}
+button.heatbtn .sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#bbb;transition:transform .15s}
+button.heatbtn[aria-pressed="true"]{background:#2a2310}
+button.heatbtn[aria-pressed="true"] .sw{background:linear-gradient(90deg,hsl(45 85% 38%),hsl(0 80% 48%))}
+button.heatbtn[aria-pressed="true"] .sw::after{transform:translateX(14px);background:#fff}
+.tip{position:absolute;z-index:10;max-width:300px;background:#0f0f0f;border:1px solid var(--gold-d);border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.4;color:var(--text);pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.5);display:none}
+.tip b{color:var(--gold-l)}
+.tip.on{display:block}
+.tip .v{margin-top:6px;color:var(--muted);font-size:12px}
+.tip .tt{font-size:14px;color:var(--text)}
+.tip .vd{margin-top:2px;color:var(--best);font-weight:600}
+.tip .th{margin-top:6px;color:var(--muted);font-size:12px}
+.rows{display:grid;grid-template-columns:auto auto 1fr;gap:3px 10px;align-items:center;margin-top:3px;font-variant-numeric:tabular-nums}
+.rows b{text-align:right;color:var(--text)}
+.rows .on{color:var(--muted);font-size:12px}
+.rows .ok{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--text)}
+.rows .ok::before{content:"";width:9px;height:9px;border-radius:2px;background:currentColor}
+.rows .ok.og{color:#ffe27a}.rows .ok.ow{color:#ff9d2e}.rows .ok.oe{color:#6cc4ff}
+.tile .idx{font-size:clamp(6px,.95vw,9px);font-weight:600;line-height:1;opacity:.65;letter-spacing:.03em;margin-bottom:clamp(1px,.25vw,3px)}
+.tile .sub2,.sub2{display:inline-flex;gap:clamp(2px,.45vw,5px);margin-top:clamp(1px,.35vw,4px);font-size:clamp(7px,1.3vw,12px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.sub2 > span{display:inline-flex;align-items:center;gap:1px;padding:clamp(1px,.2vw,2px) clamp(2px,.35vw,4px);border-radius:3px;background:#000000b8;text-shadow:none}
+.sub2 .w{color:#ffb04a}
+.sub2 .w::before{content:"!"}
+.sub2 .e{color:#7fd0ff}
+.sub2 .e::before{content:"";display:inline-block;width:.72em;height:.82em;margin-right:1px;background:currentColor;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.sub2 .sure{color:#fff}
+.sub2 .r{color:#7be3a1}
+.sub2 .r::before{content:"▼";font-size:.85em;margin-right:1px}
+.board:not(.stats) .tile .sub2{display:none}
+.board.stats .tile .pct{font-size:clamp(9px,2.1vw,17px)}
+.key:not(.stats) .st{display:none}
+.explain:not(.stats) .sv{display:none}
+.explain:not(.stats) .stile .sub2{display:none}
+.act .setup{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%}
+.act .setup .steps{display:inline-flex;gap:6px;flex-wrap:wrap}
+.act .setup .steps span{border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:13px;color:var(--text);background:#181818}
+.act .setup .steps b{color:var(--gold-l)}
+.mode-edit .board .tile.H:not(.fixed){cursor:cell}
+.tile.zero .sub2{opacity:.75}
+.tile.E .idx,.tile.X .idx{color:#7a7a7a;opacity:1}
+.tile.X .face{gap:1px}
+.tile.G .idx{color:#5a3d05;opacity:1}
+.tile.G svg{width:40%;height:40%}
+/* hover feedback that also works on heatmap colours, and keeps the green pick green */
+.tile.H:not(.fixed):hover .face{filter:brightness(1.18)}
+.tile.best:hover .hex{background:#8af0b0 !important}
+.names{margin:0 0 8px;text-align:center;font-size:12px;color:var(--muted)}
+.names b{color:var(--text)}
+button.btn.big{font-size:16px;padding:10px 22px;min-width:280px}
+button.btn.primary.on{background:transparent;color:var(--gold-l);box-shadow:inset 0 0 0 1px var(--gold)}
+.advice{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--best);border-radius:10px;padding:12px 14px;margin-bottom:14px;height:96px;overflow:hidden;box-sizing:border-box}
+.advice p:first-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.advice .hint{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .advice.err{border-left-color:var(--err)}
 .advice.done{border-left-color:var(--gold)}
 .advice.setup{border-left-color:var(--muted)}
@@ -48,7 +106,6 @@ button.btn.big{font-size:16px;padding:10px 22px}
 .tile .hex,.tile .face{position:absolute;inset:3.5%;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
 .tile .face{inset:9%;display:flex;flex-direction:column;align-items:center;justify-content:center;
   font-weight:800;font-size:clamp(14px,3.6vw,30px);line-height:1}
-.tile .pct{font-size:clamp(9px,1.6vw,13px);font-weight:600;font-variant-numeric:tabular-nums}
 .tile.H .hex{background:var(--gold)}
 .tile.H .face{background:#4a3712;color:var(--gold-l)}
 .tile.H:hover .hex,.tile.H:focus-visible .hex{background:var(--gold-l)}
@@ -63,13 +120,35 @@ button.btn.big{font-size:16px;padding:10px 22px}
 @media (prefers-reduced-motion:no-preference){.tile.C .hex{animation:pulse .9s ease-in-out infinite}}
 .tile.zero .pct{opacity:.4}
 .tile.best .hex{background:var(--best)}
+
+.tile .pct{font-size:clamp(11px,2.5vw,20px);font-weight:800;line-height:1;text-shadow:0 1px 2px #000a;font-variant-numeric:tabular-nums}
+.key{display:none;gap:8px;align-items:center;justify-content:center;margin:10px 0 0;font-size:12px;color:var(--muted)}
+.key.on{display:flex}
+.key{flex-wrap:wrap;gap:6px 14px}
+.key .kl{display:inline-flex;align-items:center;gap:5px}
+.key .kl .big{color:var(--text);font-size:14px}
+.key .sub2{margin:0;font-size:12px}
+.key a{color:var(--gold-l)}
+.key .scale{position:relative;display:inline-block;width:220px;padding-bottom:14px}
+.key .ramp{display:block;width:100%;height:10px;border-radius:5px;background:linear-gradient(90deg,hsl(40 6% 24%) 0%,hsl(54 45% 28%) 2%,hsl(46 92% 42%) 20%,hsl(30 95% 46%) 40%,hsl(8 88% 46%) 65%,hsl(350 80% 36%) 100%)}
+.key .ticks{position:absolute;left:0;right:0;top:12px;height:12px}
+.key .ticks i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:11px;color:var(--muted)}
+.key .ticks i:first-child{transform:none}.key .ticks i:last-child{transform:translateX(-100%)}
+/* possibilities in the tile panel */
+.act button.opt{display:inline-flex;flex-direction:column;align-items:center;line-height:1.2;min-width:84px}
+.act button.opt .pp{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+.act button.opt.g .pp{color:var(--gold-l)}
+.act .rows{font-size:14px;margin:0 8px 0 0}
+.act .info{flex-basis:100%;font-size:13px;color:var(--muted);margin:4px 0 0}
+.act .info b{color:var(--text)}
+.act .open{font:inherit;font-size:15px;font-weight:700;cursor:pointer;border-radius:8px;padding:9px 18px;border:0;background:var(--gold);color:#2a1d02}
 .tile.best .face{background:#173d26;color:#c8f2d5}
 .tile.sel .hex{background:#fff}
 .tile.fixed{cursor:default}
 @media (prefers-reduced-motion:no-preference){.tile.best .hex{animation:pulse 1.2s ease-in-out infinite}}
 @keyframes pulse{50%{opacity:.55}}
 
-.act{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:14px;min-height:56px}
+.act{display:flex;align-items:center;align-content:flex-start;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:14px;min-height:var(--act-h,116px);box-sizing:border-box}
 .act .lbl{font-size:14px;color:var(--muted);margin-right:4px}
 .act .lbl b{color:var(--text)}
 .act button.opt{font:inherit;font-size:15px;cursor:pointer;border-radius:8px;padding:8px 16px;border:1px solid var(--line);background:#181818;color:var(--text)}
@@ -77,65 +156,146 @@ button.btn.big{font-size:16px;padding:10px 22px}
 .act button.opt:disabled{opacity:.3;cursor:not-allowed;text-decoration:line-through}
 .act button.opt.g{border-color:var(--gold);color:var(--gold-l)}
 .act button.opt.w{color:var(--gold)}
+.act button.opt.a{color:var(--muted);font-size:14px}
+.act .lbl.small{flex-basis:100%;margin:2px 0 0;font-size:12px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:12px;font-size:12px;color:var(--muted)}
 .legend span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.legend span.dotkey::before{width:8px;height:8px;border-radius:50%;background:var(--best);vertical-align:0}
+.explain{display:flex;gap:18px;align-items:center;margin:2px 0 10px}
+.stile{position:relative;flex:0 0 auto;width:104px;height:120px}
+.stile .hex,.stile .face{position:absolute;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.stile .hex{inset:0;background:hsl(30 95% 60%)}
+.stile .face{inset:6%;background:hsl(30 95% 46%);color:#fffaf0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.stile .idx{font-size:11px;font-weight:600;opacity:.75;margin-bottom:3px}
+.stile .pct{font-size:24px;font-weight:800;line-height:1;text-shadow:0 1px 2px #000a}
+.stile .sub2{font-size:13px;margin-top:5px}
+.explain dl{margin:0;display:grid;gap:7px;font-size:13px}
+.explain dl div{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:center}
+.explain dt{display:flex;justify-content:center}
+.explain dd{margin:0}
+.explain .nm{font-size:12px;font-weight:600;color:var(--muted)}
+.explain .nb{font-size:16px;font-weight:800;color:var(--text)}
+.explain .sub2{margin:0;font-size:13px}
+.help .note{margin:0 0 10px;font-size:13px}
 .help{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--muted)}
 .help h2{margin:0 0 8px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
 .help ol{margin:0;padding-left:20px}
 .help li{margin:3px 0}
 .help b{color:var(--text)}
+@media (max-width:560px){
+  main{padding:14px 12px 32px}
+  h1{font-size:19px}
+  .sub{font-size:12px;margin-bottom:12px}
+  .bar{gap:8px}
+  .chips,.btns{width:100%}
+  .btns{justify-content:space-between}
+  .btns .btn{flex:1;padding:7px 6px}
+  .seg{flex:1}.seg button{flex:1;padding:6px 6px;white-space:nowrap;font-size:13px}
+  .chip{font-size:13px;padding:6px 10px;white-space:nowrap}
+  .advrow{flex-wrap:nowrap}
+  .advrow button{flex:1 1 0;min-width:0 !important;font-size:14px !important;padding:10px 8px !important}
+  .advice{padding:10px 12px}
+  .advrow .long,.btns .long{display:none}
+  .btns .btn{white-space:nowrap}
+  .advice{height:140px}
+  .advice .hint{-webkit-line-clamp:3}
+  .act{--act-h:160px}
+  .act button.opt{flex:1 1 0;min-width:0;padding:8px 4px;font-size:14px}
+  .act .info{font-size:12px}
+  .explain{flex-direction:column;align-items:stretch}
+  .stile{align-self:center}
+  .board.stats .tile .face{inset:4%}
+  .board.stats .tile .idx{display:none}
+  .board.stats .tile .pct{font-size:9.5px}
+  .board.stats .tile .sub2{font-size:6.5px;gap:1px;margin-top:1px}
+  .board.stats .tile .sub2 > span{padding:1px 1.5px;border-radius:2px}
+  .board .tile .pct{font-size:12px}
+  .board .tile.best .face,.board .tile.sel .face{inset:9%}
+  .act > .lbl:first-child{flex-basis:100%}
+  .advrow{flex-wrap:wrap}
+  .advrow #advBtn{flex:1 1 100%}
+  .act button.opt{padding:8px 12px;font-size:14px}
+}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 </head>
 <body>
 <main>
   <h1>Gift coach</h1>
-  <p class="sub">Copy your game here, enter what each click shows, and the Advisor tells you the best next click. Or practise on a random board.</p>
+  <p class="sub"><b>Coach my game:</b> copy your real board here and get the best next click. <b>Practice:</b> play a random board to learn.</p>
 
   <div class="bar">
     <div class="chips">
-      <div class="chip mode">Mode <b id="modeLbl">Set-up</b></div>
-      <div class="chip">Clicks <b id="clicks">0</b></div>
-      <div class="chip">Gifts <b id="found">0</b>/3</div>
+      <div class="seg" role="group" aria-label="Mode">
+        <button type="button" id="coachBtn" aria-pressed="true" title="Copy your real game here and get advice">Coach my game</button>
+        <button type="button" id="randBtn" aria-pressed="false" title="Practise on a random board that answers by itself">Practice</button>
+      </div>
+      <div class="chip">Clicks <b id="clicks">0</b> · Gifts <b id="found">0</b>/3</div>
     </div>
     <div class="btns">
-      <label class="tog"><input type="checkbox" id="heat"> Show chances</label>
-      <button class="btn ghost" id="undoBtn" type="button">Undo</button>
-      <button class="btn ghost" id="editBtn" type="button">Edit board</button>
+      <button class="btn ghost" id="undoBtn" type="button" title="Undo (Ctrl+Z)">Undo</button>
+      <button class="btn ghost" id="redoBtn" type="button" title="Redo (Ctrl+Y)">Redo</button>
+      <button class="btn ghost" id="editBtn" type="button" title="Copy tiles from your game by tapping them">Set up<span class="long"> board</span></button>
       <button class="btn ghost" id="newBtn" type="button">New board</button>
-      <button class="btn" id="randBtn" type="button">Random game</button>
     </div>
   </div>
 
   <div class="advrow">
-    <button class="btn primary big" id="advBtn" type="button">Advisor: where should I click?</button>
+    <button class="btn primary big" id="advBtn" type="button">Advisor<span class="long">: where should I click?</span></button>
+    <button class="heatbtn" id="statBtn" type="button" aria-pressed="false" title="Show the ! chance, the opens chance and how much each click rules out on every tile"><span class="sw" aria-hidden="true"></span>Statistics view</button>
   </div>
   <div class="advice" id="advice" role="status" aria-live="polite"></div>
 
+  <p class="names">Tile names: <b>row A–E</b> from the top + <b>number from the left</b>. Example: <b>C4</b> = row C, 4th tile.</p>
   <div class="board" id="board" aria-label="Game board"></div>
+
+
+  <div class="key" id="key" aria-hidden="true">
+    <span class="kl"><b class="big">19%</b> gift chance</span>
+    <span class="kl st"><span class="sub2"><span class="w">41</span></span> shows !</span>
+    <span class="kl st"><span class="sub2"><span class="e">40</span></span> opens</span>
+    <span class="kl st"><span class="sub2"><span class="r">55</span></span> rules out</span>
+    <span class="scale"><span class="ramp"></span><span class="ticks"><i style="left:0">0</i><i style="left:20%">10</i><i style="left:40%">25</i><i style="left:65%">50</i><i style="left:100%">100%</i></span></span>
+    <a href="#howto">Explained ↓</a>
+  </div>
 
   <div class="act" id="act"></div>
 
   <div class="legend">
     <span style="--c:var(--gold)">Hidden</span>
-    <span style="--c:var(--best)">Best next click</span>
+    <span style="--c:var(--best)">Best next click (all green tiles are equally good)</span>
     <span style="--c:#303030">Opened / ✕ start tile</span>
     <span style="--c:var(--gold-l)">Gift / !? to check</span>
   </div>
 
-  <section class="help">
+
+  <section class="help" id="howto">
     <h2>How to use</h2>
+    <div class="explain">
+      <div class="stile" aria-hidden="true"><span class="hex"></span><span class="face">
+        <span class="idx">B3</span><span class="pct">19%</span><span class="sub2"><span class="w">41</span><span class="e">40</span></span><span class="sub2"><span class="r">55</span></span>
+      </span></div>
+      <dl>
+        <div><dt><span class="nm">B3</span></dt><dd><b>Tile name:</b> row A–E from the top, number from the left. The Advisor uses these names.</dd></div>
+        <div><dt><span class="nb">19%</span></dt><dd><b>Gift chance:</b> how likely a gift is under this tile. The colour shows the same on a fixed scale: yellow = low, red = high. Equal chances always show the same number and colour.</dd></div>
+        <div class="sv"><dt><span class="sub2"><span class="w">41</span></span></dt><dd><b>! chance:</b> how likely it shows <b>!</b> (no gift, but one next to it).</dd></div>
+        <div class="sv"><dt><span class="sub2"><span class="e">40</span></span></dt><dd><b>Opens chance:</b> how likely it's empty with no gift around, so it opens along with all its hidden neighbours.</dd></div>
+        <div class="sv"><dt><span class="sub2"><span class="r">55</span></span></dt><dd><b>Rules out:</b> on average, a click here eliminates this share of the possible gift layouts. Higher = you learn more. Just as important as the gift chance: when chances are equal, the Advisor picks the highest one.</dd></div>
+      </dl>
+    </div>
+    <p class="note">The base view shows the name and gift chance. Turn on <b>Statistics view</b> for the !, opens and rules-out numbers (gift + ! + opens always add up to 100). Hover a tile (tap and hold on a phone) for the same numbers in words.</p>
     <ol>
-      <li><b>Set the two ✕ tiles first.</b> Tap the two tiles that show ✕ in your game. They are never on the edge.</li>
-      <li><b>Game already in progress?</b> Still in set-up, tap each opened tile: once for <b>opened (dark)</b>, twice for <b>!</b>, three times for <b>gift</b>, four times to hide it again.</li>
-      <li>Press <b>Start coaching</b>, then <b>Advisor</b>. Click the green tile in your game.</li>
-      <li>Tap the same tile here and choose what it showed: <b>Gift</b>, <b>!</b>, or <b>Opened</b>. Opened also opens its hidden neighbours here, the same as in your game.</li>
-      <li><b>Gift found:</b> the <b>!</b> tiles next to it flash as <b>!?</b>. Tap each one and say whether your game still shows <b>!</b> or a plain tile. A <b>!</b> disappears once every gift around it is found.</li>
-      <li>Wrong entry? Press <b>Undo</b>.</li>
-      <li><b>Random game:</b> practise here without another game. The tiles answer by themselves; use <b>Advisor</b> whenever you want a hint.</li>
+      <li><b>Tap the two ✕ tiles</b> from your game (never on the edge).</li>
+      <li><b>Set-up:</b> copy any tiles already open in your game by tapping them here: <b>1×</b> opened, <b>2×</b> !, <b>3×</b> gift, <b>4×</b> hidden again. New game? Skip it. Then press <b>Start coaching</b>. You can come back any time with <b>Set up board</b>.</li>
+      <li>Press <b>Advisor</b>: the best tile turns green; several green tiles are equally good. Click it in your game.</li>
+      <li>Tap the same tile here and pick what your game showed: <b>Gift</b>, <b>!</b> or <b>Opened</b>. Each button shows how likely that result was.</li>
+      <li><b>Gift found:</b> the <b>!</b> tiles next to it flash as <b>!?</b>. Say whether each still shows <b>!</b> or turned plain.</li>
+      <li>Wrong entry? <b>Undo</b> (Ctrl+Z) and <b>Redo</b> (Ctrl+Y) step through every entry, including set-up taps.</li>
+      <li><b>Practice</b> (top switch): a random board that answers by itself. On a phone, the first tap shows the possibilities, the second opens the tile.</li>
     </ol>
   </section>
   <p class="sr" id="live" aria-live="polite"></p>
+  <div class="tip" id="tip" role="tooltip"></div>
 </main>
 
 <script>
@@ -152,14 +312,15 @@ button.btn.big{font-size:16px;padding:10px 22px}
   const nb = pos.map(([r, c]) => [[0, -2], [0, 2], [-1, -1], [-1, 1], [1, -1], [1, 1]]
     .map(([a, b]) => byPos.get((r + a) * 100 + c + b)).filter(x => x !== undefined));
   const interior = i => nb[i].length === 6;
-  const name = i => `row ${pos[i][0]}, column ${pos[i][1]}`;
+  // Tile names: row letter A–E (top to bottom) + number from the left, e.g. C4.
+  const name = i => { const [r, c] = pos[i]; return 'ABCDE'[r - 1] + ((c - (r % 2 === 0 ? 1 : 2)) / 2 + 1); };
 
   /* ---------- State ----------
      st[i]: H hidden | X start tile | G gift | W "!" | C "!" to re-check after a nearby gift | E opened
      obs:   clicked tiles that showed "!" (w:true) or later turned dark (w:false),
             with the set of tiles that could still hold a hidden gift at that moment */
   let S;
-  const fresh = () => ({ st: new Array(N).fill('H'), obs: [], clicks: 0, mode: 'setup' });
+  const fresh = () => ({ st: new Array(N).fill('H'), obs: [], clicks: 0, mode: 'play' });
   function randomBoard() {
     const R = fresh();
     R.mode = 'practice';
@@ -170,8 +331,13 @@ button.btn.big{font-size:16px;padding:10px 22px}
     for (let k = 0; k < GIFTS; k++) R.secret.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
     return R;
   }
-  const hist = [];
-  let sel = -1, setupBackup = null, showAdv = false;
+  const hist = [], redo = [];
+  let sel = -1, showAdv = false;
+  // Set-up (copying tiles by tapping) is a UI mode, not part of the board, so Undo never switches it.
+  let editing = true;
+  let stats = false;
+  try { stats = localStorage.getItem('giftCoach.stats') === '1'; } catch (e) {}
+  let lastPointer = 'mouse';   // touch: first tap inspects, second tap opens (Practice)
 
   const snapshot = () => JSON.stringify(S);
   const hiddenNow = () => S.st.reduce((a, s, i) => (s === 'H' && a.push(i), a), []);
@@ -210,22 +376,53 @@ button.btn.big{font-size:16px;padding:10px 22px}
     cf.forEach(s => s.forEach(i => { if (cnt.has(i)) cnt.set(i, cnt.get(i) + 1); }));
     let m = -1, tied = [];
     cnt.forEach((v, i) => { if (v > m) { m = v; tied = [i]; } else if (v === m) tied.push(i); });
-    let best = tied[0];
-    if (tied.length > 1) {
-      const Hs = new Set(H);
-      let score = Infinity;
-      for (const t of tied) {
-        // expected number of layouts left after the click (smaller = more informative)
-        const h = { G: 0, W: 0, E: 0 };
-        cf.forEach(s => { h[outcome(t, s, Hs)]++; });
-        const e = h.G * h.G + h.W * h.W + h.E * h.E;
-        if (e < score) { score = e; best = t; }
-      }
+    // Among equally likely tiles, prefer the click that leaves the fewest layouts on average.
+    // What each click could show (gift / "!" / opened), counted over all layouts.
+    const Hs = new Set(H), score = new Map(), split = new Map();
+    for (const t of H) {
+      const h = { G: 0, W: 0, E: 0 };
+      cf.forEach(s => { h[outcome(t, s, Hs)]++; });
+      split.set(t, h);
+      score.set(t, h.G * h.G + h.W * h.W + h.E * h.E);
     }
+    let best = tied[0];
+    tied.forEach(t => { if (score.get(t) < score.get(best)) best = t; });
+    const equal = tied.filter(t => t !== best && score.get(t) === score.get(best));   // truly just as good
+    const sameChance = tied.filter(t => score.get(t) !== score.get(best));             // same odds, less information
     const prob = new Map(); cnt.forEach((v, i) => prob.set(i, v / cf.length));
-    return { best, prob, layouts: cf.length };
+    let minPos = Infinity; cnt.forEach(v => { if (v > 0 && v < minPos) minPos = v; });
+    return { best, prob, layouts: cf.length, equal, sameChance, split, max: m / cf.length, flat: minPos === m };
   }
 
+  // Percentages of a split that always add up to exactly 100.
+  function pct100(parts, total) {
+    const raw = parts.map(v => v / total * 100), fl = raw.map(Math.floor);
+    let left = 100 - fl.reduce((a, b) => a + b, 0);
+    raw.map((v, k) => [v - fl[k], k]).sort((a, b) => b[0] - a[0]).forEach(([, k]) => { if (left > 0 && parts[k] > 0) { fl[k]++; left--; } });
+    return fl;
+  }
+  // Gift / ! / opens as whole percentages. The gift share is rounded on its own, so equal
+  // chances always show the same number; ! and opens split the rest so the three add up to 100.
+  function shares(G, W, E, L) {
+    const g = G === L ? 100 : G === 0 ? 0 : Math.min(99, Math.max(1, Math.round(G / L * 100)));
+    const rest = 100 - g;
+    if (W + E === 0) return [g, 0, 0];
+    const w = W === 0 ? 0 : E === 0 ? rest : Math.min(rest - 1, Math.max(1, Math.round(rest * W / (W + E))));
+    return [g, Math.max(0, w), rest - Math.max(0, w)];
+  }
+  // Share of the possible layouts a click on this tile rules out on average (0–100).
+  const rulesOut = (h, L) => Math.round((1 - (h.G * h.G + h.W * h.W + h.E * h.E) / (L * L)) * 100);
+  // How many of the remaining layouts give each result for tile t (null = board already inconsistent).
+  function resultCounts(t) {
+    const cf = configs();
+    if (!cf.length) return null;
+    const H = new Set(hiddenNow());
+    const near = s => nb[t].some(n => s.has(n) && H.has(n));
+    const c = { G: 0, W: 0, E: 0, L: cf.length };
+    if (S.st[t] === 'H') cf.forEach(s => { if (s.has(t)) c.G++; else if (near(s)) c.W++; else c.E++; });
+    else cf.forEach(s => { if (near(s)) c.W++; else c.E++; });
+    return c;
+  }
   // Which results are still possible for tile t, given everything entered so far.
   function possibleResults(t) {
     const cf = configs();
@@ -235,7 +432,8 @@ button.btn.big{font-size:16px;padding:10px 22px}
     if (S.st[t] === 'H') return {
       G: cf.some(s => s.has(t)),
       W: cf.some(s => !s.has(t) && near(s)),
-      E: cf.some(s => !s.has(t) && !near(s))
+      E: cf.some(s => !s.has(t) && !near(s)),
+      A: cf.some(s => !s.has(t))
     };
     return { W: cf.some(near), E: cf.some(s => !near(s)) };
   }
@@ -256,13 +454,19 @@ button.btn.big{font-size:16px;padding:10px 22px}
   /* ---------- Actions ---------- */
   let lastMsg = null;
   const msg = (kind, html, hint) => { lastMsg = { kind, html, hint }; };
-  function commit(fn) { hist.push(snapshot()); fn(); sel = -1; showAdv = false; render(); }
+  // Every change is one undoable step. The Advisor stays on once you've asked for it.
+  function commit(fn) { hist.push(snapshot()); redo.length = 0; fn(); sel = -1; render(); }
+  const xPhase = () => S.mode === 'play' && count('X') < XTILES;
+  const hasEntries = () => S.st.some(x => x !== 'H' && x !== 'X');
 
   function enter(i, res) {
     const s = S.st[i];
     const ok = possibleResults(i);
     if (ok && ok[res] === false) { msg('err', 'That result is not possible here.', 'Check what your game shows. If an earlier entry was wrong, use Undo.'); render(); return; }
-    if (s === 'H') {
+    if (s === 'H' && res === 'A') {
+      // Opened before the coach was used (e.g. flipped by a neighbour): not a gift, nothing else known.
+      commit(() => { S.st[i] = 'E'; });
+    } else if (s === 'H') {
       commit(() => {
         S.clicks++;
         S.st[i] = res;
@@ -305,36 +509,81 @@ button.btn.big{font-size:16px;padding:10px 22px}
     });
   }
 
-  function setupTap(i) {
-    const s = S.st[i], xs = count('X');
-    let next;
-    if (s === 'X') next = 'H';
-    else if (xs < XTILES) {
-      if (s !== 'H') next = 'H';
-      else if (!interior(i)) { msg('err', 'The ✕ tiles are never on the edge.', 'Tap the two ✕ tiles from your game; they are inside the board.'); render(); return; }
-      else next = 'X';
-    } else next = { H: 'E', E: 'W', W: 'G', G: 'H' }[s];
-    commit(() => { S.st[i] = next; });
+  // ✕ tiles: tap to place (interior only), tap again to remove while nothing else is entered.
+  // Set-up tap: hidden → opened → ! → gift → hidden. Each tap is one undoable step.
+  function tapSetup(i) {
+    const st = S.st[i];
+    if (st === 'X') { tapX(i); return; }
+    let next = { H: 'E', E: 'W', W: 'G', C: 'G', G: 'H' }[st];
+    if (next === 'G' && count('G') >= GIFTS) next = 'H';
+    commit(() => {
+      S.st[i] = next;
+      S.obs = S.obs.filter(o => o.t !== i);
+      if (next === 'W') S.obs.push({ t: i, w: true, snap: [], s: 1 });
+      // a "!" copied in set-up means a gift is hidden next to it right now
+      const h = hiddenNow();
+      S.obs.forEach(o => { if (o.s) o.snap = h; });
+    });
+  }
+  function finishSetup() {
+    if (count('X') < XTILES) return;
+    if (!configs().length) { msg('err', 'This board isn\'t possible yet.', 'Every ! needs at least one gold tile next to it. Check the board against your game, or use Undo.'); render(); return; }
+    editing = false; sel = -1; render();
+  }
+  function tapX(i) {
+    const st = S.st[i];
+    if (st === 'X') {
+      if (hasEntries()) { msg('err', 'The ✕ tiles can\'t be moved after you\'ve entered results.', 'Use Undo to step back, or New board to start over.'); render(); return; }
+      commit(() => { S.st[i] = 'H'; });
+      return;
+    }
+    if (st !== 'H') return;
+    if (!interior(i)) { msg('err', 'The ✕ tiles are never on the edge.', 'Tap the two ✕ tiles from your game; they are inside the board.'); render(); return; }
+    commit(() => { S.st[i] = 'X'; });
   }
 
-  function startCoaching() {
-    if (count('X') !== XTILES) { msg('err', 'Set both ✕ tiles first.', 'Tap the two ✕ tiles from your game.'); render(); return; }
-    if (count('G') > GIFTS) { msg('err', `You marked ${count('G')} gifts. There are only 3.`, ''); render(); return; }
-    const trial = JSON.parse(snapshot());
-    const snap0 = hiddenNow();
-    S.obs = [];
-    S.st.forEach((s, i) => { if (s === 'W') S.obs.push({ t: i, w: true, snap: snap0 }); });
-    const feasible = configs().length > 0;
-    S = trial;
-    if (!feasible) { msg('err', 'This board is not possible.', 'Every ! needs at least one gold tile next to it, and gifts cannot be hidden under opened tiles. Check the board against your game.'); render(); return; }
-    commit(() => {
-      // A "!" on screen means a still-hidden gift is next to it right now.
-      const snap = hiddenNow();
-      S.obs = [];
-      S.st.forEach((s, i) => { if (s === 'W') S.obs.push({ t: i, w: true, snap }); });
-      S.mode = 'play';
-      setupBackup = null;
-    });
+  // Heatmap colour, keyed to the rounded percentage so tiles showing the same number get the same colour.
+  // Relative to the most likely tile so the hot spots stand out even when every chance is small.
+  // Fixed ("real") scale: a colour always means the same chance, on every board.
+  // Stops at 1%, 10%, 25%, 50%, 100% so the common low chances stay distinguishable.
+  const HEAT = [[1, 54, 45, 28], [10, 46, 92, 42], [25, 30, 95, 46], [50, 8, 88, 46], [100, -8, 80, 36]];
+  function heatHSL(pct, dl) {
+    if (pct <= 0) return `hsl(40 6% ${18 + dl}%)`;
+    let k = 0;
+    while (k < HEAT.length - 2 && pct > HEAT[k + 1][0]) k++;
+    const [p1, h1, s1, l1] = HEAT[k], [p2, h2, s2, l2] = HEAT[k + 1];
+    const f = Math.max(0, Math.min(1, (pct - p1) / (p2 - p1)));
+    const h = Math.round(h1 + (h2 - h1) * f);
+    return `hsl(${(h + 360) % 360} ${Math.round(s1 + (s2 - s1) * f)}% ${Math.round(l1 + (l2 - l1) * f) + dl}%)`;
+  }
+
+  // The three possible results of a click, one per line. When a tile opens, it always opens
+  // all of its hidden neighbours, so that number is exact.
+  function outcomeRows(i, G, W, E, L) {
+    const sh = shares(G, W, E, L), openN = nb[i].filter(n => S.st[n] === 'H').length;
+    const row = (cls, k, v, note) => `<span class="ok ${cls}">${k}</span><b>${v}%</b><span class="on">${note}</span>`;
+    return '<div class="rows">' +
+      row('og', 'Gift', sh[0], 'found one') +
+      row('ow', '!', sh[1], 'a gift is next to it') +
+      row('oe', 'Opens', sh[2], openN ? `+${openN} more tile${openN === 1 ? '' : 's'} open` : 'no other tiles open') +
+      '</div>';
+  }
+
+  // Hover text: tile name, chance, the possible results and (with the Advisor on) a verdict.
+  function explain(i, adv) {
+    const pct = v => `${Math.round(v * 100)}%`;
+    const p = adv.prob.get(i) || 0, L = adv.layouts, h = adv.split.get(i);
+    let top = `<b>${name(i)}</b> · ${shares(h.G, h.W, h.E, L)[0]}% gift chance`;
+    let verdict = '';
+    if (showAdv && p > 0) {
+      if (i === adv.best || adv.equal.includes(i)) verdict = adv.equal.length ? 'Best click (tied, equally good)' : 'Best click';
+      else if (adv.sameChance.includes(i)) verdict = 'Same chance as the green tile, but tells you less';
+      else verdict = 'Lower chance than the green tile';
+    }
+    if (p === 0) verdict = 'No gift can be here';
+    return `<div class="tt">${top}</div>` + (verdict ? `<div class="vd">${verdict}</div>` : '') +
+      '<div class="th">If you click it:</div>' + outcomeRows(i, h.G, h.W, h.E, L) +
+      (p < 0.9999 ? `<div class="v"><span class="sub2"><span class="r">${rulesOut(h, L)}</span></span> rules out about ${rulesOut(h, L)}% of the possible layouts on average.</div>` : '');
   }
 
   /* ---------- Rendering ---------- */
@@ -345,13 +594,16 @@ button.btn.big{font-size:16px;padding:10px 22px}
     const done = play && found === GIFTS;
     const xs = count('X');
     const checks = count('C');
-    const heat = $('heat').checked;
+    const heat = true;
     // Chances are shown whenever "Show chances" is on; the green best tile only after pressing Advisor.
-    const adv = (play && !done && !checks && (showAdv || heat)) ? advise() : null;
+    const xp = xPhase();
+    const edit = editing && !practice && !xp;
+    const adv = (play && !xp && !done && !checks && (showAdv || heat)) ? advise() : null;
 
     tiles.forEach((b, i) => {
       const s = S.st[i];
-      let cls = 'tile ' + s, html = '', label = name(i);
+      let cls = 'tile ' + s, html = '', label = name(i), shown = 0;
+      delete b.dataset.tip;
       if (s === 'G') { html = GIFT_SVG; label += ', gift'; }
       else if (s === 'W') { html = '!'; label += ', gift nearby'; }
       else if (s === 'C') { html = '!?'; label += ', check: still ! in your game?'; }
@@ -361,45 +613,67 @@ button.btn.big{font-size:16px;padding:10px 22px}
         label += ', hidden';
         if (adv && !adv.err) {
           const p = adv.prob.get(i) || 0;
-          if (heat) html = `<span class="pct">${Math.round(p * 100)}%</span>`;
+          if (heat) {
+            const h = adv.split.get(i), sh = shares(h.G, h.W, h.E, adv.layouts);
+            shown = sh[0];
+            html = `<span class="pct">${sh[0]}%</span>` +
+              (sh[0] === 100 ? '<span class="sub2"><span class="sure">sure</span></span>'
+                : `<span class="sub2"><span class="w">${sh[1]}</span><span class="e">${sh[2]}</span></span><span class="sub2"><span class="r">${rulesOut(h, adv.layouts)}</span></span>`);
+          }
           if (p === 0) cls += ' zero';
-          if (showAdv && i === adv.best) { cls += ' best'; label += ', best next click'; }
+          if (showAdv && (i === adv.best || adv.equal.includes(i))) { cls += ' best'; label += adv.equal.length ? ', one of the equally good best clicks' : ', best next click'; }
           label += `, ${Math.round(p * 100)}% gift chance`;
+          b.dataset.tip = explain(i, adv);
         }
       }
-      const clickable = !play || s === 'H' || (!practice && (s === 'W' || s === 'C'));
+      const clickable = edit ? (s !== 'X' || !hasEntries()) : s === 'H' || (!practice && (s === 'W' || s === 'C' || (s === 'X' && !hasEntries())));
       if (!clickable || done) cls += ' fixed';
       if (i === sel) cls += ' sel';
       b.className = cls;
+      html = `<span class="idx">${name(i)}</span>` + html;
       const face = b.querySelector('.face');
       if (face.innerHTML !== html) face.innerHTML = html;
+      const hexEl = b.querySelector('.hex');
+      const pr = shown;   // colour follows the number on the tile, so equal numbers always look equal
+      const heated = heat && s === 'H' && adv && !adv.err;
+      // All possible tiles equal: one calm colour instead of painting the whole board red.
+      const bg = heated ? heatHSL(pr, 0) : '';
+      const edge = i === sel ? '#ffffff' : heated && !cls.includes(' best') ? heatHSL(pr, 14) : '';
+      if (face.style.background !== bg) face.style.background = bg;
+      if (hexEl.style.background !== edge) hexEl.style.background = edge;
+      face.style.color = bg ? (pr > 0 ? '#fffaf0' : '#8a8478') : '';
       b.setAttribute('aria-label', label);
     });
 
     const A = $('advice');
     let kind, html, hint = '';
     if (lastMsg) { ({ kind, html, hint } = lastMsg); lastMsg = null; }
-    else if (!play && xs < XTILES) {
+    else if (xp) {
       kind = 'setup';
-      html = `Tap the <b>${XTILES - xs}</b> ✕ tile${XTILES - xs === 1 ? '' : 's'} still missing from your game.`;
-      hint = 'The two ✕ tiles are empty from the start and never on the edge.';
-    } else if (!play) {
-      kind = 'setup';
-      html = 'Both ✕ tiles set. Press <b>Start coaching</b>.';
-      hint = 'Game already in progress? First copy the opened tiles: tap once for opened, twice for !, three times for gift, four times to hide again.';
+      html = xs ? 'Now tap the second <b>✕</b> tile from your game.' : 'Start by tapping the two <b>✕</b> tiles from your game.';
+      hint = 'They\'re empty from the start and never on the edge. Chances and the Advisor start as soon as both are set.';
     } else if (done) {
       kind = 'done';
       html = `All 3 gifts found in <b>${S.clicks}</b> click${S.clicks === 1 ? '' : 's'}.`;
-      hint = practice ? 'Perfect play averages about 10.4 clicks. Press Random game to play again.' : 'Press New board for the next game.';
+      hint = practice ? 'Perfect play averages about 10.4 clicks. Press New board to play again.' : 'Press New board for the next game.';
     } else if (checks) {
       kind = '';
       html = `Gift found! Check the <b>${checks}</b> flashing <b>!?</b> tile${checks === 1 ? '' : 's'} next to it.`;
       hint = 'Tap each one: does your game still show ! there, or is it now a plain tile?';
+    } else if (edit && (!adv || !adv.err) && !showAdv) {
+      kind = 'setup';
+      html = 'Set-up: copy your game by tapping tiles (taps explained below the board).';
+      hint = 'New game? Just press Start coaching. The chances update as you tap.';
     } else if (!adv || (!showAdv && !adv.err)) {
       kind = 'setup';
       html = practice
         ? 'Click any gold tile, or press <b>Advisor</b> for the best one.'
-        : 'Press <b>Advisor</b> for the next click, or tap the tile you clicked and enter its result.';
+        : 'Press <b>Advisor</b> for the best next click, or tap a tile to enter what your game shows.';
+      if (!practice && !hasEntries()) hint = 'Game already in progress? Use Set up board to copy the open tiles.';
+    } else if (adv.err && edit) {
+      kind = 'err';
+      html = 'Not possible yet — keep copying your board.';
+      hint = 'Every ! needs at least one gold tile next to it, and there are only 3 gifts. Chances come back as soon as the board can be real.';
     } else if (adv.err) {
       kind = 'err';
       html = 'These results don’t fit any possible gift layout.';
@@ -407,8 +681,22 @@ button.btn.big{font-size:16px;padding:10px 22px}
     } else {
       kind = '';
       const p = adv.prob.get(adv.best);
-      html = `Click <b>${name(adv.best)}</b>` + (p >= 0.9999 ? ' — a gift is certainly there.' : ` — ${Math.round(p * 100)}% gift chance.`);
+      const bs = adv.split.get(adv.best), shownP = shares(bs.G, bs.W, bs.E, adv.layouts)[0];
+      const greens = [adv.best, ...adv.equal];
+      html = adv.equal.length
+        ? (greens.length <= 4
+          ? `Click <b>${greens.map(name).sort().join('</b> or <b>')}</b> — ${shownP}% gift chance each, all equally good.`
+          : `Click any of the <b>${greens.length}</b> green tiles — ${shownP}% gift chance each, all equally good.`)
+        : `Click <b>${name(adv.best)}</b>` + (p >= 0.9999 ? ' — a gift is certainly there.' : ` — ${shownP}% gift chance.`);
+      const pct = Math.round(p * 100);
       hint = `${adv.layouts} possible gift layout${adv.layouts === 1 ? '' : 's'} left.`;
+      if (adv.equal.length) hint = `Same chance and same ▼${rulesOut(adv.split.get(adv.best), adv.layouts)}% rules out, so any of them is fine. ` + hint;
+      else if (adv.sameChance.length) {
+        const outOf = t => rulesOut(adv.split.get(t), adv.layouts);
+        const bestOut = outOf(adv.best), next = Math.max(...adv.sameChance.map(outOf));
+        const others = adv.sameChance.length === 1 ? '1 other tile has' : `${adv.sameChance.length} other tiles have`;
+        hint = `${others} the same chance, but this one rules out the most: ▼${bestOut}% vs ▼${next}% at best. ` + hint;
+      }
     }
     A.className = 'advice ' + kind;
     A.innerHTML = `<p>${html}</p>` + (hint ? `<p class="hint">${hint}</p>` : '');
@@ -420,55 +708,99 @@ button.btn.big{font-size:16px;padding:10px 22px}
       return `<button type="button" class="opt ${cls}" data-res="${res}"${no ? ' disabled title="Not possible with what is already on the board"' : ''}>${txt}</button>`;
     };
     let a = '';
-    if (!play) {
-      a = `<span class="lbl">${xs < XTILES ? 'Tap the ✕ tiles.' : 'Tap: 1× opened, 2× !, 3× gift, 4× hidden. Tap a ✕ to move it.'}</span>` +
-        '<span style="flex:1"></span>' +
-        (setupBackup ? '<button type="button" class="btn ghost" id="cancelSetup">Cancel</button>' : '') +
-        `<button type="button" class="btn primary" id="startBtn"${xs === XTILES ? '' : ' disabled'}>Start coaching</button>`;
+    if (xp) {
+      a = `<span class="lbl">Tap the ✕ tiles (${xs}/${XTILES}). Tap a ✕ again to remove it.</span>`;
+    } else if (edit) {
+      a = '<div class="setup"><span class="lbl">Set-up taps:</span><span class="steps"><span><b>1×</b> opened</span><span><b>2×</b> !</span><span><b>3×</b> gift</span><span><b>4×</b> hidden</span></span>' +
+        `<span style="flex:1"></span><button type="button" class="btn primary" id="doneEdit">${S.clicks ? 'Done' : 'Start coaching'}</button></div>`;
     } else if (practice) {
-      a = `<span class="lbl">${done ? 'Game finished.' : 'Random game: click gold tiles to open them.'}</span>`;
+      if (done || sel < 0) a = `<span class="lbl">${done ? 'Game finished. Press New board to play again.' : 'Practice: click a gold tile to open it. Hover (or tap once on a phone) to see the possibilities first.'}</span>`;
+      else {
+        const c = resultCounts(sel);
+        a = `<span class="lbl">If you click <b>${name(sel)}</b>:</span>` + outcomeRows(sel, c.G, c.W, c.E, c.L) +
+          '<button type="button" class="open" data-res="open">Open this tile</button><button type="button" class="opt" data-res="x">Cancel</button>';
+      }
     } else if (sel < 0) {
-      a = `<span class="lbl">${done ? 'Game finished.' : 'Tap the tile you clicked in your game to enter its result.'}</span>`;
+      a = `<span class="lbl">${done ? 'Game finished.' : 'Tap a tile to enter what your game shows for it.'}</span>`;
     } else {
+      const c = resultCounts(sel);
+      const sh = c ? (S.st[sel] === 'H' ? shares(c.G, c.W, c.E, c.L) : [0, ...pct100([c.W, c.E], c.L)]) : null;
+      const pct = k => sh ? `<span class="pp">${sh[k]}%</span>` : '';
+      const openN = nb[sel].filter(n => S.st[n] === 'H').length;
       a = `<span class="lbl">Tile <b>${name(sel)}</b> showed:</span>`;
-      if (S.st[sel] === 'H') a += opt('g', 'G', 'Gift') + opt('w', 'W', '!') + opt('', 'E', 'Opened (dark)');
-      else if (S.st[sel] === 'C') a += opt('w', 'W', 'Still !') + opt('', 'E', 'Now plain');
-      else a += opt('', 'E', 'Now plain');
+      if (S.st[sel] === 'H') a += opt('g', 'G', 'Gift' + pct(0)) + opt('w', 'W', '!' + pct(1)) + opt('', 'E', 'Opened' + pct(2));
+      else if (S.st[sel] === 'C') a += opt('w', 'W', 'Still !' + pct(1)) + opt('', 'E', 'Now plain' + pct(2));
+      else a += opt('', 'E', 'Now plain' + pct(2));
       a += '<button type="button" class="opt" data-res="x">Cancel</button>';
-      if (ok && Object.values(ok).includes(false)) a += '<span class="lbl" style="flex-basis:100%;margin:2px 0 0">Crossed-out results are impossible with what is already on the board.</span>';
+      const notes = [];
+      if (c && S.st[sel] === 'H') notes.push('% = how likely each result is' + (openN ? ` · <b>Opened</b> also opens ${openN} tile${openN === 1 ? '' : 's'}` : ''));
+      if (ok && Object.values(ok).includes(false)) notes.push('crossed out = impossible');
+      if (notes.length) a += `<span class="info">${notes.join(' · ')}</span>`;
     }
     $('act').innerHTML = a;
 
-    $('modeLbl').textContent = practice ? 'Random game' : play ? 'Coach' : 'Set-up';
+    $('coachBtn').setAttribute('aria-pressed', practice ? 'false' : 'true');
+    $('randBtn').setAttribute('aria-pressed', practice ? 'true' : 'false');
     $('clicks').textContent = S.clicks;
     $('found').textContent = found;
     $('undoBtn').disabled = !hist.length;
-    $('editBtn').disabled = !play || practice;
-    $('advBtn').disabled = !play || done || checks > 0;
+    $('redoBtn').disabled = !redo.length;
+    $('advBtn').disabled = xp || done || checks > 0;
+    $('advBtn').innerHTML = showAdv && !xp && !done ? 'Hide advice' : 'Advisor<span class="long">: where should I click?</span>';
+    $('advBtn').classList.toggle('on', showAdv && !xp && !done);
+    $('key').classList.toggle('on', !xp && !done);
+    $('key').classList.toggle('stats', stats);
+    $('board').classList.toggle('stats', stats);
+    document.querySelector('.explain').classList.toggle('stats', true);
+    $('statBtn').setAttribute('aria-pressed', stats ? 'true' : 'false');
+    $('editBtn').disabled = practice || xp || edit;
+    document.body.classList.toggle('mode-edit', edit);
+    refreshTip();
   }
 
   /* ---------- Events ---------- */
   $('board').addEventListener('click', e => {
     const b = e.target.closest('.tile'); if (!b) return;
     const i = +b.dataset.i, s = S.st[i];
-    if (S.mode === 'setup') { setupTap(i); tiles[i].focus(); return; }
-    if (S.mode === 'practice') { if (count('G') < GIFTS) { practiceClick(i); tiles[i].focus(); } return; }
+    if (S.mode === 'practice') {
+      if (count('G') >= GIFTS || s !== 'H') return;
+      if (lastPointer === 'touch' && sel !== i) { sel = i; hideTip(); render(); return; }   // first tap: show possibilities
+      sel = -1; practiceClick(i); tiles[i].focus({ preventScroll: true }); return;
+    }
+    if (xPhase() || (s === 'X' && !editing)) { tapX(i); tiles[i].focus({ preventScroll: true }); return; }
+    if (editing) { tapSetup(i); tiles[i].focus({ preventScroll: true }); return; }
     if (count('G') === GIFTS) return;
     if (count('C') && s !== 'C') { msg('', 'First check the flashing <b>!?</b> tiles.', 'Tap each one: still ! in your game, or now plain?'); sel = -1; render(); return; }
+    if (s === 'W' && sel !== i) {
+      const ok = possibleResults(i);
+      if (ok && !ok.E) { msg('', 'This <b>!</b> must still be lit.', 'A gift is still hidden next to it, so it can\'t have turned plain. If your game shows it plain, an earlier entry is wrong; use Undo.'); sel = -1; render(); return; }
+    }
     sel = (s === 'H' || s === 'W' || s === 'C') && sel !== i ? i : -1;
     render();
-    if (sel >= 0) { const f = $('act').querySelector('button.opt'); if (f) f.focus(); }
+    if (sel >= 0) { const f = $('act').querySelector('button.opt'); if (f) f.focus({ preventScroll: true }); }
   });
   $('act').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.id === 'startBtn') { startCoaching(); return; }
-    if (b.id === 'cancelSetup') { S = JSON.parse(setupBackup); setupBackup = null; sel = -1; render(); return; }
+    if (b.id === 'doneEdit') { finishSetup(); return; }
     const res = b.dataset.res; if (!res) return;
     const t = sel;
-    if (res === 'x') { sel = -1; render(); } else enter(t, res);
-    if (t >= 0) tiles[t].focus();
+    if (res === 'x') { sel = -1; render(); }
+    else if (res === 'open') { sel = -1; practiceClick(t); }
+    else enter(t, res);
+    if (t >= 0) tiles[t].focus({ preventScroll: true });
   });
-  $('undoBtn').addEventListener('click', () => { if (!hist.length) return; S = JSON.parse(hist.pop()); sel = -1; showAdv = false; render(); });
+  // Stepping back into a half-copied board (not possible yet) returns to set-up, where that is expected.
+  const backToSetupIfNeeded = () => { if (S.mode !== 'practice' && count('X') >= XTILES && !configs().length) editing = true; };
+  function undo() { if (!hist.length) return; redo.push(snapshot()); S = JSON.parse(hist.pop()); sel = -1; backToSetupIfNeeded(); render(); }
+  function redoStep() { if (!redo.length) return; hist.push(snapshot()); S = JSON.parse(redo.pop()); sel = -1; backToSetupIfNeeded(); render(); }
+  $('undoBtn').addEventListener('click', undo);
+  $('redoBtn').addEventListener('click', redoStep);
+  document.addEventListener('keydown', e => {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+    else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redoStep(); }
+  });
   // In-page confirmation (browser pop-ups are blocked in many previews and embeds)
   function confirmClick(btn, needed, run) {
     if (!needed || btn.dataset.armed) {
@@ -481,16 +813,60 @@ button.btn.big{font-size:16px;padding:10px 22px}
     btn.textContent = 'Click again to confirm';
     btn._t = setTimeout(() => { delete btn.dataset.armed; btn.textContent = btn.dataset.label; }, 3000);
   }
-  const unfinished = () => hist.length > 0 && !(S.mode !== 'setup' && count('G') === GIFTS);
-  $('newBtn').addEventListener('click', e => confirmClick(e.currentTarget, unfinished(), () => {
-    S = fresh(); hist.length = 0; sel = -1; setupBackup = null; showAdv = false; render();
-  }));
-  $('randBtn').addEventListener('click', e => confirmClick(e.currentTarget, unfinished(), () => {
-    S = randomBoard(); hist.length = 0; sel = -1; setupBackup = null; showAdv = false; render();
-  }));
-  $('editBtn').addEventListener('click', () => { setupBackup = snapshot(); commit(() => { S.mode = 'setup'; S.st = S.st.map(x => x === 'C' ? 'W' : x); }); });
-  $('heat').addEventListener('change', render);
-  $('advBtn').addEventListener('click', () => { showAdv = true; sel = -1; render(); });
+  const unfinished = () => hist.length > 0 && count('G') < GIFTS;
+  // New board keeps the current mode; the Coach / Random game switch changes it.
+  const reset = board => { S = board; hist.length = 0; redo.length = 0; sel = -1; showAdv = false; editing = board.mode !== 'practice'; render(); };
+  const startCoach = () => reset(fresh());
+  const startRandom = () => reset(randomBoard());
+  $('newBtn').addEventListener('click', e => confirmClick(e.currentTarget, unfinished(), S.mode === 'practice' ? startRandom : startCoach));
+  $('randBtn').addEventListener('click', e => {
+    if (S.mode === 'practice' && !unfinished()) { startRandom(); return; }
+    confirmClick(e.currentTarget, unfinished(), startRandom);
+  });
+  $('coachBtn').addEventListener('click', e => { if (S.mode !== 'practice') return; confirmClick(e.currentTarget, unfinished(), startCoach); });
+
+  // Tooltip: mouse hover, keyboard focus, or touch-and-hold
+  const tip = $('tip');
+  let tipFor = null, holdT = null, held = false;
+  function showTip(b) {
+    if (!b || !b.dataset.tip) { hideTip(); return; }
+    tipFor = b;
+    tip.innerHTML = b.dataset.tip;
+    tip.classList.add('on');
+    const r = b.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+    let x = r.left + r.width / 2 - tw / 2 + window.scrollX;
+    x = Math.max(8 + window.scrollX, Math.min(x, window.scrollX + document.documentElement.clientWidth - tw - 8));
+    let y = r.top + window.scrollY - th - 8;
+    if (r.top - th - 8 < 0) y = r.bottom + window.scrollY + 8;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  function hideTip() { tipFor = null; tip.classList.remove('on'); }
+  function refreshTip() { if (tipFor) showTip(tipFor); }
+  $('board').addEventListener('pointerdown', e => { lastPointer = e.pointerType || 'mouse'; });
+  $('board').addEventListener('pointerover', e => { if (e.pointerType === 'mouse') showTip(e.target.closest('.tile')); });
+  $('board').addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hideTip(); });
+  $('board').addEventListener('focusin', e => { if (e.target.matches(':focus-visible')) showTip(e.target.closest('.tile')); });
+  $('board').addEventListener('focusout', hideTip);
+  $('board').addEventListener('touchstart', e => {
+    const b = e.target.closest('.tile'); held = false;
+    clearTimeout(holdT);
+    holdT = setTimeout(() => { held = true; showTip(b); }, 450);
+  }, { passive: true });
+  $('board').addEventListener('touchend', () => { clearTimeout(holdT); if (held) setTimeout(hideTip, 1800); });
+  $('board').addEventListener('touchmove', () => clearTimeout(holdT), { passive: true });
+  // a touch-and-hold shows the explanation only; it does not click the tile
+  $('board').addEventListener('click', e => { if (held) { e.stopImmediatePropagation(); held = false; } }, true);
+  window.addEventListener('scroll', hideTip, { passive: true });
+  $('advBtn').addEventListener('click', () => { showAdv = !showAdv; sel = -1; render(); });
+  $('statBtn').addEventListener('click', () => {
+    stats = !stats;
+    try { localStorage.setItem('giftCoach.stats', stats ? '1' : '0'); } catch (e) {}
+    render();
+  });
+  $('editBtn').addEventListener('click', () => {
+    editing = true; sel = -1;
+    if (count('C')) commit(() => { S.st = S.st.map(x => x === 'C' ? 'W' : x); }); else render();
+  });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && sel >= 0) { sel = -1; render(); } });
 
   S = fresh();
