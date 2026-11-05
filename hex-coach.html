@@ -291,6 +291,7 @@ button.btn#saveBtn.dirty::after{content:"";display:inline-block;width:7px;height
 .act p.do{flex-basis:100%;margin:0 0 6px;font-size:15px;font-weight:600;line-height:1.4;color:var(--text)}
 .act p.do b{color:var(--gold-l)}
 .act .lbl.small{font-size:12px}
+.act p.do .cnt{font-weight:400;color:var(--muted);font-size:13px}
 .phaserow[hidden]{display:none}
 .phaserow .seg{display:flex;width:100%}
 .phaserow .seg button{flex:1;font-size:15px;padding:9px 10px}
@@ -936,7 +937,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
     const left = count('C');
     msg('', `${giftFound ? 'Gift found! ' : ''}Filled in for you: ${listAnd(list)}.`,
       `Only that result fits the board${autoFilled.length > 1 ? ' for these' : ''}, so your game must show the same.` +
-      (left ? ` Now check the ${left === 1 ? 'last flashing <b>!?</b> tile' : `<b>${left}</b> flashing <b>!?</b> tiles`}.` : ' If your game shows something else, an earlier entry is wrong: use Undo.'));
+      (left ? ` Now answer ${left === 1 ? 'the last <b>!?</b> question' : `the <b>${left}</b> <b>!?</b> questions`} under the board.` : ' If your game shows something else, an earlier entry is wrong: use Undo.'));
   }
   function enter(i, res) {
     const s = S.st[i];
@@ -1105,6 +1106,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
     // Chances are shown whenever "Show chances" is on; the green best tile only after pressing Advisor.
     const xp = xPhase();
     const edit = editing && !practice && !xp;
+    if (!practice && !edit && !xp && checks && (sel < 0 || S.st[sel] !== 'C')) sel = S.st.indexOf('C');
     const adv = (play && !xp && !done && !checks && (showAdv || heat)) ? advise() : null;
     const la = ((showAdv || peek) && adv && !adv.err && !edit) ? lookahead() : null;
 
@@ -1176,7 +1178,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
     } else if (checks) {
       kind = '';
       html = `Gift found! Check the <b>${checks}</b> flashing <b>!?</b> tile${checks === 1 ? '' : 's'} next to it.`;
-      hint = 'Tap each one: does your game still show ! there, or is it now a plain tile?';
+      hint = 'Answer under the board: does your game still show ! there, or is it now plain?';
     } else if (edit && (!adv || !adv.err) && !showAdv) {
       kind = 'setup';
       html = 'Set-up: copy your game by tapping tiles (taps explained below the board).';
@@ -1263,11 +1265,12 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
       const sh = c ? (S.st[sel] === 'H' ? shares(c.G, c.W, c.E, c.L) : [0, ...pct100([c.W, c.E], c.L)]) : null;
       const pct = k => sh ? `<span class="pp">${sh[k]}%</span>` : '';
       const openN = nb[sel].filter(n => S.st[n] === 'H').length;
-      a = doLine(S.st[sel] === 'H' ? `What did <b>${name(sel)}</b> show in your game?` : `Does <b>${name(sel)}</b> still show <b>!</b> in your game?`);
+      a = doLine(S.st[sel] === 'H' ? `What did <b>${name(sel)}</b> show in your game?`
+        : `Does <b>${name(sel)}</b> still show <b>!</b> in your game?` + (S.st[sel] === 'C' && checks > 1 ? ` <span class="cnt">(${checks} tiles to check)</span>` : ''));
       if (S.st[sel] === 'H') a += opt('g', 'G', 'Gift' + pct(0)) + opt('w', 'W', '!' + pct(1)) + opt('', 'E', 'Opened' + pct(2));
       else if (S.st[sel] === 'C') a += opt('w', 'W', 'Still !' + pct(1)) + opt('', 'E', 'Now plain' + pct(2));
       else a += opt('', 'E', 'Now plain' + pct(2));
-      a += '<button type="button" class="opt a" data-res="x">Cancel</button>';
+      if (S.st[sel] !== 'C') a += '<button type="button" class="opt a" data-res="x">Cancel</button>';
       const notes = [];
       if (c && S.st[sel] === 'H') notes.push('% = how likely each result is' + (openN ? ` · <b>Opened</b> also opens ${openN} tile${openN === 1 ? '' : 's'}` : ''));
       if (ok && Object.values(ok).includes(false)) notes.push('crossed out = impossible');
@@ -1321,7 +1324,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
     if (xPhase() || (s === 'X' && !editing)) { tapX(i); tiles[i].focus({ preventScroll: true }); return; }
     if (editing) { tapSetup(i); tiles[i].focus({ preventScroll: true }); return; }
     if (count('G') === GIFTS) return;
-    if (count('C') && s !== 'C') { msg('', 'First check the flashing <b>!?</b> tiles.', 'Tap each one: still ! in your game, or now plain?'); sel = -1; render(); return; }
+    if (count('C') && s !== 'C') { msg('', 'First answer the <b>!?</b> question under the board.', 'Does your game still show ! there, or is it now plain?'); sel = -1; render(); return; }
     if (s === 'W' && sel !== i) {
       const ok = possibleResults(i);
       if (ok && !ok.E) { msg('', 'This <b>!</b> must still be lit.', 'A gift is still hidden next to it, so it can\'t have turned plain. If your game shows it plain, an earlier entry is wrong; use Undo.'); sel = -1; render(); return; }
