@@ -330,6 +330,11 @@ body.in-setup .phaserow #doneEdit:not(:disabled)::after{content:" ▶"}
 .phaserow #doneEdit[aria-pressed="true"]{background:var(--best);color:#0d2a17}
 @media (prefers-reduced-motion:no-preference){body.in-setup .phaserow #doneEdit:not(:disabled){animation:pulse 1.4s ease-in-out infinite}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.updates{margin-top:22px;font-size:14px;color:var(--muted)}
+.updates h3{margin:0 0 6px;font-size:15px;color:var(--text)}
+.updates ul{margin:0 0 6px;padding-left:18px}
+.updates li{margin:3px 0;line-height:1.45}
+.updates b{color:var(--gold-l)}
 footer{margin-top:22px;padding:16px 0 4px;border-top:1px solid var(--line);text-align:center;font-size:13px;color:var(--muted)}
 footer .recruit{margin:0 0 10px;font-size:14px;color:var(--text)}
 footer .recruit b{color:var(--gold);letter-spacing:.3em}
@@ -494,6 +499,14 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
       <li>All numbers assume the game places gifts uniformly at random. If it doesn't, the numbers shift.</li>
     </ul>
 
+  </section>
+  <section class="updates" aria-labelledby="updHead">
+    <h3 id="updHead">Updates</h3>
+    <ul>
+      <li><b>6 Nov 2026</b> · A "!" copied in set-up can now be cleared after its gift is found. Answer buttons no longer jump or miss taps on phones. The heatmap note moved below the question panel.</li>
+      <li><b>Earlier</b> · Advisor heatmap, Save/Load on this device, one-tap mirrored ✕ start, precomputed first hints, exact 10.07 average.</li>
+    </ul>
+    <p class="small">Still seeing old behaviour? Refresh the page (Ctrl+F5 / Cmd+Shift+R, or close and reopen the tab on phones).</p>
   </section>
   <p class="sr" id="live" aria-live="polite"></p>
   <div class="tip" id="tip" role="tooltip"></div>
