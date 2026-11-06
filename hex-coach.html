@@ -1,10 +1,4 @@
 <!doctype html>
-<!--
-  Blackcrest Decoder Luckbox Advisor
-  Copyright 2026 the Luckbox Advisor author
-  SPDX-License-Identifier: Apache-2.0
-  Licensed under the Apache License, Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
--->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -81,6 +75,9 @@ button.heatbtn[aria-pressed="true"] .sw::after{transform:translateX(14px);backgr
 .board.ah .tile .pct{text-shadow:none}
 .board.ah .tile .pct.long{font-size:.8em;letter-spacing:-.02em}
 .board.ah .tile.zero .pct{opacity:1}
+/* no gift possible: diagonal stripes over the tile, so it never looks like a gift candidate */
+.board.ah .tile.zero .face{background-image:repeating-linear-gradient(135deg,rgba(0,0,0,.42) 0 5px,transparent 5px 10px) !important}
+.tile .ahs.no{text-transform:uppercase;letter-spacing:0;white-space:nowrap;font-size:clamp(6px,1.05vw,10px);background:#000000b0;color:#f0c9bd;border-radius:3px;padding:1px 2px;opacity:1}
 .board.stats .tile .pct{font-size:clamp(9px,2.1vw,17px)}
 .key:not(.stats) .st{display:none}
 .explain:not(.stats) .sv{display:none}
@@ -248,6 +245,7 @@ button.btn.primary:disabled{opacity:1;background:#2e2818;border-color:#4a4030;co
 .proof span{display:block;font-size:11.5px;line-height:1.3;color:var(--muted);margin-top:2px}
 .proofnote{margin:0 0 16px;text-align:center;font-size:12px;color:var(--muted)}
 .proofnote a{color:var(--gold-l)}
+.method a,.help a{color:var(--gold-l)}
 .method h3{margin:16px 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-l)}
 .method p{margin:0 0 8px}
 .method ul{margin:0 0 8px;padding-left:20px}
@@ -399,7 +397,7 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
         <div class="sv"><dt><span class="sub2"><span class="r">55</span></span></dt><dd><b>Rules out:</b> on average, a click here eliminates this share of the possible gift layouts. Higher = you learn more right now.</dd></div>
       </dl>
     </div>
-    <p class="note">The base view shows the name and gift chance. Turn on <b>Statistics view</b> for the !, opens and rules-out numbers (gift + ! + opens always add up to 100). Hover a tile (tap and hold on a phone) for the same numbers in words. Tick <b>Heatmap</b> in the corner of the advice box to colour every tile by how many clicks it takes to finish the board if you click it now: bright green = the Advisor's pick, darker = more clicks, with the difference (+0.06 and so on) on each tile. The colours are relative to the current board, so even small differences show. With a mouse, the Advisor's pick is outlined in green while you hover over the board, even when the advice is hidden, and every tooltip shows how it compares.</p>
+    <p class="note">The base view shows the name and gift chance. Turn on <b>Statistics view</b> for the !, opens and rules-out numbers (gift + ! + opens always add up to 100). Hover a tile (tap and hold on a phone) for the same numbers in words. <b>Heatmap</b> (on by default, untick it in the corner of the advice box) colours every tile by how many clicks it takes to finish the board if you click it now: bright green = the Advisor's pick, darker = more clicks, with the difference (+0.06 and so on) on each tile. Striped tiles marked NO GIFT can't hold a gift: clicking them can only give information. The colours are relative to the current board, so even small differences show. With a mouse, the Advisor's pick is outlined in green while you hover over the board, even when the advice is hidden, and every tooltip shows how it compares.</p>
     <ol>
       <li><b>Tap one ✕ tile</b> from your game. The second one is placed automatically, since the game always puts it at the 180° mirror position.</li>
       <li><b>Set-up:</b> copy any tiles already open in your game by tapping them here: <b>1×</b> opened, <b>2×</b> !, <b>3×</b> gift, <b>4×</b> hidden again. New game? Skip it. Then tap <b>2 · Coaching</b> in the switch under the board. You can go back any time with <b>1 · Set up</b>.</li>
@@ -483,14 +481,6 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
       <li>All numbers assume the game places gifts uniformly at random. If it doesn't, the numbers shift.</li>
     </ul>
 
-    <h3>License</h3>
-    <p class="small">This tool is open source under the <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache License 2.0</a>. In short:</p>
-    <ul>
-      <li><b>You may</b> use, copy, change and share it, also commercially, and build your own version on it.</li>
-      <li><b>If you share it</b>, keep the copyright and license notice, and say what you changed.</li>
-      <li><b>No warranty:</b> it comes as it is, and the author isn't liable for any damage.</li>
-      <li>It gives no right to use the author's name or logo, and it includes a patent licence from contributors.</li>
-    </ul>
   </section>
   <p class="sr" id="live" aria-live="polite"></p>
   <div class="tip" id="tip" role="tooltip"></div>
@@ -736,7 +726,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
   const hist = [], redo = [];
   let sel = -1, showAdv = true;   // the Advisor is on by default; the button switches it off
   let peek = false;
-  let advHeat = false;   // Advisor heatmap: tiles coloured by clicks to finish (relative to this board)   // mouse over the board: show the Advisor's pick even when advice is hidden
+  let advHeat = true;    // Advisor heatmap (clicks to finish, relative to this board): on by default, the tickbox turns it off
   // Set-up (copying tiles by tapping) is a UI mode, not part of the board, so Undo never switches it.
   let editing = true;
   let stats = false;
@@ -1154,8 +1144,9 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
           }
           if (ah) {
             const v = la.values[i], h = adv.split.get(i), ch = shares(h.G, h.W, h.E, adv.layouts)[0];
-            if (v === undefined) html = `<span class="pct">–</span><span class="ahs">${ch}%</span>`;
-            else { const t = v - ahMin < 0.00005 ? 'best' : '+' + fmtDiff(v - ahMin); html = `<span class="pct${t.length > 5 ? ' long' : ''}">${t}</span><span class="ahs">${ch}%</span>`; }
+            const sub = p === 0 ? '<span class="ahs no">no gift</span>' : `<span class="ahs">${ch}%</span>`;
+            if (v === undefined) html = `<span class="pct">–</span>${sub}`;
+            else { const t = v - ahMin < 0.00005 ? 'best' : '+' + fmtDiff(v - ahMin); html = `<span class="pct${t.length > 5 ? ' long' : ''}">${t}</span>${sub}`; }
             if (v !== undefined && v - ahMin >= 0.00005) label += `, ${fmtDiff(v - ahMin)} more clicks to finish than the best`;
           }
           if (p === 0) cls += ' zero';
@@ -1242,23 +1233,22 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
           ? `Click ${listOr(greens.map(n => `<b>${name(n)}</b>`))}` + (sameShown ? ` — ${chance(best)}% gift chance each, all equally good.` : ' — all equally good.')
           : `Click any of the <b>${greens.length}</b> green tiles — all equally good.`)
         : `Click <b>${name(best)}</b>` + (p >= 0.9999 ? ' — a gift is certainly there.' : ` — ${chance(best)}% gift chance.`);
-      // The strongest tile that isn't green (highest chance, then fewest clicks): explain why it was skipped.
+      // Compare with the second best click: the non-green tile with the fewest clicks to finish
+      // (ties: the higher gift chance, so the comparison is the one a player would wonder about).
       let hi = -1;
-      adv.prob.forEach((v, t) => {
-        if (la.best.includes(t) || la.values[t] === undefined) return;
-        const ph = hi < 0 ? -1 : adv.prob.get(hi);
-        if (hi < 0 || v > ph + 1e-12 || (Math.abs(v - ph) <= 1e-12 && la.values[t] < la.values[hi])) hi = t;
-      });
-      const [vb, vh] = hi >= 0 ? fmtPair(la.values[best], la.values[hi]) : ['', ''];
-      const gap = hi >= 0 ? la.values[hi] - la.values[best] : 0;
-      const tiny = gap < 0.00005;   // too small to matter: say so instead of printing equal-looking numbers
-      if (hi >= 0 && adv.prob.get(hi) > p + 1e-9)
-        hint = tiny ? `<b>${name(hi)}</b> has a higher chance (${chance(hi)}%), but this click is practically as good overall and slightly better for the rest of the board.`
-          : `<b>${name(hi)}</b> has a higher chance (${chance(hi)}%), but ${greens.length > 1 ? 'these finish' : 'this click finishes'} the board in fewer clicks on average: ${vb} vs ${vh} (${fmtDiff(gap)} fewer).`;
-      else if (hi >= 0 && Math.abs(adv.prob.get(hi) - p) < 1e-9)
-        hint = tiny ? `Same chance as <b>${name(hi)}</b>, and practically as good overall (difference under 0.0001 clicks).`
-          : `Same chance as <b>${name(hi)}</b>, but ${greens.length > 1 ? 'these finish' : 'this click finishes'} the board in fewer clicks on average: ${vb} vs ${vh} (${fmtDiff(gap)} fewer).`;
-      else
+      for (const t in la.values) {
+        const k = +t;
+        if (la.best.includes(k) || S.st[k] !== 'H') continue;
+        if (hi < 0 || la.values[k] < la.values[hi] - 1e-12 || (Math.abs(la.values[k] - la.values[hi]) <= 1e-12 && (adv.prob.get(k) || 0) > (adv.prob.get(hi) || 0))) hi = k;
+      }
+      if (hi >= 0) {
+        const [vb, vh] = fmtPair(la.values[best], la.values[hi]);
+        const gap = la.values[hi] - la.values[best];
+        const higher = (adv.prob.get(hi) || 0) > p + 1e-9;
+        hint = gap < 0.00005
+          ? `Second best: <b>${name(hi)}</b> (${chance(hi)}% gift chance), practically as good (under 0.0001 clicks difference).`
+          : `Second best: <b>${name(hi)}</b> (${chance(hi)}% gift chance${higher ? ', higher' : ''}). Clicks to finish: ${vb} here vs ${vh} there, ${fmtDiff(gap)} fewer.`;
+      } else
         hint = `About ${la.values[best].toFixed(1)} clicks to finish, this one included. ${adv.layouts} possible gift layout${adv.layouts === 1 ? '' : 's'} left.`;
     }
     A.className = 'advice ' + kind;
@@ -1562,10 +1552,12 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
   // a touch-and-hold shows the explanation only; it does not click the tile
   $('board').addEventListener('click', e => { if (held) { e.stopImmediatePropagation(); held = false; } }, true);
   window.addEventListener('scroll', hideTip, { passive: true });
-  $('ahBox').addEventListener('change', () => { advHeat = $('ahBox').checked; render(); });
+  $('ahBox').addEventListener('change', () => { advHeat = $('ahBox').checked; if (advHeat) stats = false; render(); });
   $('advBtn').addEventListener('click', () => { showAdv = !showAdv; sel = -1; render(); });
+  // Statistics view and the Advisor heatmap both draw on the tiles, so only one is on at a time.
   $('statBtn').addEventListener('click', () => {
     stats = !stats;
+    if (stats) advHeat = false;
     render();
   });
   $('doneEdit').addEventListener('click', () => { if (!$('doneEdit').disabled) finishSetup(); });
