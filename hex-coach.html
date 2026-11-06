@@ -75,6 +75,7 @@ button.heatbtn[aria-pressed="true"] .sw::after{transform:translateX(14px);backgr
 .board.ah .tile .pct{text-shadow:none}
 .board.ah .tile .pct.long{font-size:.8em;letter-spacing:-.02em}
 .board.ah .tile.zero .pct{opacity:1}
+@media (max-width:430px){.board.ah .tile .idx{display:none}.board.ah .tile .pct{font-size:10.5px;letter-spacing:-.03em}.board.ah .tile .pct.long{font-size:9px}.board.ah .tile .ahs{font-size:7px}.board.ah .tile .face{inset:6%}}
 /* no gift possible: diagonal stripes over the tile, so it never looks like a gift candidate */
 .board.ah .tile.zero .face{background-image:repeating-linear-gradient(135deg,rgba(0,0,0,.42) 0 5px,transparent 5px 10px) !important}
 .tile .ahs.no{text-transform:uppercase;letter-spacing:0;white-space:nowrap;font-size:clamp(6px,1.05vw,10px);background:#000000b0;color:#f0c9bd;border-radius:3px;padding:1px 2px;opacity:1}
@@ -115,6 +116,9 @@ button.btn.primary:disabled{opacity:1;background:#2e2818;border-color:#4a4030;co
 .advwrap{position:relative}
 .ahtog{position:absolute;top:8px;right:10px;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--gold-l);background:#141414;border:1px solid var(--gold-d);border-radius:8px;padding:4px 9px;cursor:pointer;user-select:none}
 .ahtog[hidden]{display:none}
+.ahnote{margin:12px 0 0;text-align:center;font-size:13px;line-height:1.45;color:var(--muted)}
+.ahnote[hidden]{display:none}
+.ahnote b{color:var(--text)}
 .ahtog input{accent-color:var(--best);width:16px;height:16px;margin:0}
 .advwrap.ah-on .advice p:first-child{padding-right:112px}
 .tile .ahs{font-size:clamp(7px,1.25vw,11px);font-weight:700;opacity:.85;margin-top:clamp(1px,.3vw,3px);line-height:1}
@@ -125,6 +129,10 @@ button.btn.primary:disabled{opacity:1;background:#2e2818;border-color:#4a4030;co
 .board{position:relative;width:100%;aspect-ratio:9 / 4.6188;margin:0 auto;user-select:none;-webkit-user-select:none}
 .tile{position:absolute;width:11.111%;height:25%;padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tile:focus-visible{outline:none}
+/* the tile itself takes every click: its labels are redrawn often (hints, heatmap), and a click that
+   starts on a label that gets replaced before release would otherwise be lost */
+.tile *{pointer-events:none}
+.act button *{pointer-events:none}
 .tile .hex,.tile .face{position:absolute;inset:3.5%;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
 .tile .face{inset:9%;display:flex;flex-direction:column;align-items:center;justify-content:center;
   font-weight:800;font-size:clamp(14px,3.6vw,30px);line-height:1}
@@ -291,6 +299,10 @@ button.btn#saveBtn.dirty::after{content:"";display:inline-block;width:7px;height
 .method table.dist th{white-space:normal;vertical-align:bottom}
 .method table.dist td,.method table.dist th{padding-left:6px;padding-right:6px}
 .method table.dist td.bar{width:60%}
+.actbox.asking{outline:2px solid var(--gold);outline-offset:-1px;background:#2a2310;box-shadow:0 0 0 4px #e8b43722}
+.actbox.asking p.do{color:var(--gold-l);font-size:16px}
+@media (prefers-reduced-motion:no-preference){.actbox.asking{animation:askin .5s ease-out 1}}
+@keyframes askin{0%{box-shadow:0 0 0 10px #e8b43755}100%{box-shadow:0 0 0 4px #e8b43722}}
 .phaserow{margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 .actbox{display:flex;flex-direction:column}
 .phaserow.compact{order:2;margin:10px 0 0;padding:8px 0 0;border-bottom:0;border-top:1px solid var(--line)}
@@ -359,7 +371,7 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
   </div>
   <div class="advwrap">
     <div class="advice" id="advice" role="status" aria-live="polite"></div>
-    <label class="ahtog" id="ahTog" hidden title="Colour every tile by how many clicks it takes to finish the board if you click it now. The colours are relative to this board: brightest green = the Advisor's pick, darkest = the worst click."><input type="checkbox" id="ahBox"> Heatmap</label>
+    <label class="ahtog" id="ahTog" hidden title="Show on every tile how many extra decoders it costs on average compared with the Advisor's pick. Colours are relative to this board: brightest green = the pick, darkest = the worst click."><input type="checkbox" id="ahBox"> Heatmap</label>
   </div>
 
   <div class="board" id="board" aria-label="Game board"></div>
@@ -374,6 +386,7 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
     </div>
     <div class="actin" id="act"></div>
   </div>
+  <p class="ahnote" id="ahNote" hidden><b>Heatmap:</b> the number on each tile = <b>extra decoders</b> on average if you click it instead of the Advisor's pick (<b>best</b>). Brighter = closer to the best. Striped <b>NO GIFT</b> tiles can't hold a gift.</p>
 
   <div class="legend">
     <span style="--c:var(--gold)">Hidden</span>
@@ -726,6 +739,15 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
   const hist = [], redo = [];
   let sel = -1, showAdv = true;   // the Advisor is on by default; the button switches it off
   let peek = false;
+  let wasAsking = false;
+  let lastAct = null;
+  // A question just opened under the board: make sure the player can see it and its buttons.
+  function showPanel() {
+    requestAnimationFrame(() => {
+      const r = $('actbox').getBoundingClientRect();
+      if (r.bottom > innerHeight - 8 || r.top < 0) $('actbox').scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+  }
   let advHeat = true;    // Advisor heatmap (clicks to finish, relative to this board): on by default, the tickbox turns it off
   // Set-up (copying tiles by tapping) is a UI mode, not part of the board, so Undo never switches it.
   let editing = true;
@@ -1026,16 +1048,26 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
       S.st[i] = next;
       S.copied = true;   // tiles were copied from a game in progress: earlier clicks happened there
       S.obs = S.obs.filter(o => o.t !== i);
-      if (next === 'W') S.obs.push({ t: i, w: true, snap: [], s: 1 });
-      // a "!" copied in set-up means a gift is hidden next to it right now
-      const h = hiddenNow();
-      S.obs.forEach(o => { if (o.s) o.snap = h; });
+      // a "!" copied in set-up: a gift that wasn't found yet at that moment is next to it.
+      // pre = the gifts already found when it was copied (those can't be what keeps it lit).
+      const gifts = () => S.st.reduce((a, x, k) => (x === 'G' && a.push(k), a), []);
+      if (next === 'W') S.obs.push({ t: i, w: true, snap: [], s: 1, pre: gifts() });
+      // gifts entered in this set-up: the ! next to them may have gone plain in the game, so ask on Coaching
+      S.setupGifts = (S.setupGifts || []).filter(k => S.st[k] === 'G');
+      if (next === 'G' && !S.setupGifts.includes(i)) S.setupGifts.push(i);
+      const h = hiddenNow(), g = gifts();
+      S.obs.forEach(o => { if (o.s) o.snap = h.concat(g.filter(k => !(o.pre || []).includes(k))); });
     });
   }
   function finishSetup() {
     if (count('X') < XTILES) return;
     if (!configs().length) { msg('err', 'This board isn\'t possible yet.', 'Every ! needs at least one gold tile next to it. Check the board against your game, or use Undo.'); render(); return; }
-    editing = false; sel = -1; render();
+    // a gift entered in set-up next to a lit !: ask whether that ! is still lit in the game
+    const ask = [];
+    (S.setupGifts || []).forEach(k => nb[k].forEach(n => { if (S.st[n] === 'W' && !ask.includes(n)) ask.push(n); }));
+    editing = false; sel = -1;
+    if (ask.length || (S.setupGifts || []).length) commit(() => { ask.forEach(n => { S.st[n] = 'C'; }); S.setupGifts = []; autoCheck(); if (ask.length) tellAutoFilled(true); });
+    else render();
   }
   function tapX(i) {
     const st = S.st[i];
@@ -1147,7 +1179,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
             const sub = p === 0 ? '<span class="ahs no">no gift</span>' : `<span class="ahs">${ch}%</span>`;
             if (v === undefined) html = `<span class="pct">–</span>${sub}`;
             else { const t = v - ahMin < 0.00005 ? 'best' : '+' + fmtDiff(v - ahMin); html = `<span class="pct${t.length > 5 ? ' long' : ''}">${t}</span>${sub}`; }
-            if (v !== undefined && v - ahMin >= 0.00005) label += `, ${fmtDiff(v - ahMin)} more clicks to finish than the best`;
+            if (v !== undefined && v - ahMin >= 0.00005) label += `, ${fmtDiff(v - ahMin)} extra decoders on average compared with the Advisor's pick`;
           }
           if (p === 0) cls += ' zero';
           if (la && showAdv && la.best.includes(i)) { cls += ' best'; label += la.best.length > 1 ? ', one of the equally good best clicks' : ', best next click'; }
@@ -1296,7 +1328,11 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
       if (ok && Object.values(ok).includes(false)) notes.push('crossed out = impossible');
       if (notes.length) a += `<span class="info">${notes.join(' · ')}</span>`;
     }
-    $('act').innerHTML = a;
+    if (lastAct !== a) { $('act').innerHTML = a; lastAct = a; }   // rebuild only on change, so a button never vanishes mid-tap
+    const asking = !practice && !edit && !xp && sel >= 0;
+    $('actbox').classList.toggle('asking', asking);
+    if (asking && !wasAsking) showPanel();
+    wasAsking = asking;
 
     $('coachBtn').setAttribute('aria-pressed', practice ? 'false' : 'true');
     $('randBtn').setAttribute('aria-pressed', practice ? 'true' : 'false');
@@ -1329,11 +1365,14 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
       ? '<span class="tag">SET-UP</span><span><span class="step">Step 1 of 2: place the ✕ tiles</span>Tap one of the <b>✕</b> tiles from your game. The second one is placed for you (always its 180° mirror).</span>'
       : `<span class="tag">SET-UP</span><span><span class="step">Step 2 of 2: copy your board, then start</span>${S.clicks ? 'Fix the tiles that differ from your game, then tap <b>2 · Coaching</b>.' : 'New game? Tap <b>2 · Coaching</b> now. Game in progress? First tap the tiles already open in your game: <b>1×</b> opened, <b>2×</b> !, <b>3×</b> gift.'}</span>`;
     renderSave();
-    const canAh = showAdv && la && !edit && !done && !checks && !xp;
+    // The toggle and caption depend on the mode only, not on whether the hint has arrived yet:
+    // otherwise they vanish during each recalculation and the panel under the board jumps mid-tap.
+    const canAh = showAdv && !edit && !done && !checks && !xp;
     $('ahTog').hidden = !canAh;
     $('ahBox').checked = advHeat;
     document.querySelector('.advwrap').classList.toggle('ah-on', !!canAh);
     $('board').classList.toggle('ah', !!ah);
+    $('ahNote').hidden = !(canAh && advHeat);
     refreshTip();
   }
 
@@ -1542,13 +1581,20 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
   $('board').addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hideTip(); if (peek) { peek = false; render(); } } });
   $('board').addEventListener('focusin', e => { if (e.target.matches(':focus-visible')) showTip(e.target.closest('.tile')); });
   $('board').addEventListener('focusout', hideTip);
+  // Hold vs tap is decided from the touch events' own timestamps, not from the timer: on a busy
+  // phone the timer can fire late, after the finger already lifted, and must not swallow a quick tap.
+  let touchT0 = 0, moved = false;
   $('board').addEventListener('touchstart', e => {
-    const b = e.target.closest('.tile'); held = false;
+    const b = e.target.closest('.tile'); held = false; moved = false; touchT0 = e.timeStamp;
     clearTimeout(holdT);
-    holdT = setTimeout(() => { held = true; showTip(b); }, 450);
+    holdT = setTimeout(() => { if (!moved) showTip(b); }, 450);
   }, { passive: true });
-  $('board').addEventListener('touchend', () => { clearTimeout(holdT); if (held) setTimeout(hideTip, 1800); });
-  $('board').addEventListener('touchmove', () => clearTimeout(holdT), { passive: true });
+  $('board').addEventListener('touchend', e => {
+    clearTimeout(holdT);
+    held = !moved && e.timeStamp - touchT0 >= 450;
+    if (held) setTimeout(hideTip, 1800); else hideTip();
+  });
+  $('board').addEventListener('touchmove', () => { moved = true; clearTimeout(holdT); }, { passive: true });
   // a touch-and-hold shows the explanation only; it does not click the tile
   $('board').addEventListener('click', e => { if (held) { e.stopImmediatePropagation(); held = false; } }, true);
   window.addEventListener('scroll', hideTip, { passive: true });
