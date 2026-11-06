@@ -391,7 +391,7 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
     </div>
     <div class="actin" id="act"></div>
   </div>
-  <p class="ahnote" id="ahNote" hidden><b>Heatmap:</b> the number on each tile = <b>extra decoders</b> on average if you click it instead of the Advisor's pick (<b>best</b>). Brighter = closer to the best. Striped <b>NO GIFT</b> tiles can't hold a gift.</p>
+  <p class="ahnote" id="ahNote" hidden><b>Heatmap:</b> the number on each tile = <b>extra decoders</b> on average if you click it instead of the Advisor's pick (<b>best</b>). Brighter = closer to the best. Striped <b>NO GIFT</b> tiles can't hold a gift. A <b>SURE GIFT</b> is a must-click: the numbers return after it.</p>
 
   <div class="legend">
     <span style="--c:var(--gold)">Hidden</span>
@@ -693,6 +693,27 @@ var GiftEngine = (function () {
     for (t in res.values) values[m[+t]] = res.values[t];
     return { values: values, best: res.best.map(function (x) { return m[x]; }), classic: m[res.classic], min: res.min, pick: res.pick >= 0 ? m[res.pick] : -1 };
   }
+  /* A sure gift (a gift in every possible layout) must be clicked at some point anyway. Clicking it
+     now is never worse than any other click: any plan can click it first and then make exactly the
+     same clicks, and it only learns its result earlier. So it gets the best value on the board and
+     is the pick. (The one-step lookahead alone can miss this by a hair, because after the sure gift
+     it lets the simple advisor play instead of the best follow-up.) */
+  function applySure(input, res) {
+    var sure = [], t, i, n = input.layouts.length;
+    for (t = 0; t < N; t++) {
+      if (!input.hidden[t] || input.found[t] || res.values[t] === undefined) continue;
+      for (i = 0; i < n; i++) { var l = input.layouts[i]; if (l[0] !== t && l[1] !== t && l[2] !== t) break; }
+      if (n && i === n) sure.push(t);
+    }
+    if (!sure.length) return res;
+    var m = Infinity;
+    for (t in res.values) if (res.values[t] < m) m = res.values[t];
+    var values = {};
+    for (t in res.values) values[t] = res.values[t];
+    sure.forEach(function (k) { values[k] = m; });
+    return { values: values, best: sure, classic: res.classic, min: m, pick: sure[0], sure: sure };
+  }
+  function analyseSure(input) { return applySure(input, analyse(input)); }
   // Order-independent fingerprint of a position (tiles + every consistent layout), used to look up
   // precomputed hints. Two positions with the same key have the same layouts, so the same answer.
   function stateKey(input) {
@@ -705,7 +726,7 @@ var GiftEngine = (function () {
     }
     return k + '|' + input.layouts.length + '|' + sum + '|' + (x >>> 0) + '|' + (input.flip ? 1 : 0);
   }
-  return { analyse: analyse, stateKey: stateKey, flipFor: flipFor, classic: classic, nb: nb, N: N, rot: rot, SYMS: SYMS, equalise: equalise };
+  return { analyse: analyseSure, applySure: applySure, stateKey: stateKey, flipFor: flipFor, classic: classic, nb: nb, N: N, rot: rot, SYMS: SYMS, equalise: equalise };
 })();
 if (typeof module !== 'undefined') module.exports = GiftEngine;
 if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof module === 'undefined') {
@@ -815,8 +836,8 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
     const op = openingResult();
     if (op) { laCache.set(key, op); return op; }
     if (SECOND) {
-      const e = SECOND[GiftEngine.stateKey(laInput())];
-      if (e) { const r = unpack(e); laCache.set(key, r); return r; }
+      const inp = laInput(), e = SECOND[GiftEngine.stateKey(inp)];
+      if (e) { const r = GiftEngine.applySure(inp, unpack(e)); laCache.set(key, r); return r; }
     }
     if (!laBusy) {
       laBusy = true;
@@ -1160,6 +1181,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
     const la = ((showAdv || peek) && adv && !adv.err && !edit) ? lookahead() : null;
 
     const ah = advHeat && showAdv && la && !edit && !done && !checks;
+    const sureOn = !!(ah && la && la.sure && la.sure.length);
     let ahMin = 0, ahMax = 0;
     if (ah) { const vs = S.st.map((x, k) => x === 'H' ? la.values[k] : undefined).filter(v => v !== undefined); ahMin = Math.min(...vs); ahMax = Math.max(...vs); }
     const ahPos = v => ahMax - ahMin < 1e-9 ? 0 : Math.sqrt((v - ahMin) / (ahMax - ahMin));
@@ -1190,9 +1212,12 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
           if (ah) {
             const v = la.values[i], h = adv.split.get(i), ch = shares(h.G, h.W, h.E, adv.layouts)[0];
             const sub = p === 0 ? '<span class="ahs no">no gift</span>' : `<span class="ahs">${ch}%</span>`;
-            if (v === undefined) html = `<span class="pct">–</span>${sub}`;
+            // A sure gift is a must-click, not a choice to compare: while one is on the board, only it is
+            // marked and the other tiles wait (the heatmap returns right after it).
+            if (sureOn) html = la.sure.includes(i) ? `<span class="pct long">sure</span><span class="ahs">gift</span>` : `<span class="pct">–</span>${sub}`;
+            else if (v === undefined) html = `<span class="pct">–</span>${sub}`;
             else { const t = v - ahMin < 0.00005 ? 'best' : '+' + fmtDiff(v - ahMin); html = `<span class="pct${t.length > 5 ? ' long' : ''}">${t}</span>${sub}`; }
-            if (v !== undefined && v - ahMin >= 0.00005) label += `, ${fmtDiff(v - ahMin)} extra decoders on average compared with the Advisor's pick`;
+            if (!sureOn && v !== undefined && v - ahMin >= 0.00005) label += `, ${fmtDiff(v - ahMin)} extra decoders on average compared with the Advisor's pick`;
           }
           if (p === 0) cls += ' zero';
           if (la && showAdv && la.best.includes(i)) { cls += ' best'; label += la.best.length > 1 ? ', one of the equally good best clicks' : ', best next click'; }
@@ -1213,7 +1238,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
       const pr = shown;   // colour follows the number on the tile, so equal numbers always look equal
       const heated = heat && s === 'H' && adv && !adv.err;
       // All possible tiles equal: one calm colour instead of painting the whole board red.
-      const ahv = ah && s === 'H' ? la.values[i] : undefined;
+      const ahv = ah && s === 'H' && !(sureOn && !la.sure.includes(i)) ? la.values[i] : undefined;
       const ahU = ahv === undefined ? -1 : ahPos(ahv);
       const bg = ah && s === 'H' ? (ahU < 0 ? 'hsl(40 6% 18%)' : ahColor(ahU, 0)) : heated ? heatHSL(pr, 0) : '';
       const edge = i === sel ? '#ffffff' : ah && s === 'H' ? (cls.includes(' best') ? '' : ahU < 0 ? 'hsl(40 6% 26%)' : ahColor(ahU, 10)) : heated && !cls.includes(' best') && !cls.includes(' peek') ? heatHSL(pr, 14) : '';
@@ -1286,7 +1311,9 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
         if (la.best.includes(k) || S.st[k] !== 'H') continue;
         if (hi < 0 || la.values[k] < la.values[hi] - 1e-12 || (Math.abs(la.values[k] - la.values[hi]) <= 1e-12 && (adv.prob.get(k) || 0) > (adv.prob.get(hi) || 0))) hi = k;
       }
-      if (hi >= 0) {
+      if (la.sure && la.sure.includes(best))
+        hint = `A sure gift never costs extra: you have to click it anyway, and its result can only help. About ${la.values[best].toFixed(1)} clicks to finish, this one included.`;
+      else if (hi >= 0) {
         const [vb, vh] = fmtPair(la.values[best], la.values[hi]);
         const gap = la.values[hi] - la.values[best];
         const higher = (adv.prob.get(hi) || 0) > p + 1e-9;
