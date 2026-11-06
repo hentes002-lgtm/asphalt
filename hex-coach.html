@@ -77,6 +77,10 @@ button.heatbtn[aria-pressed="true"] .sw::after{transform:translateX(14px);backgr
 .sub2 .r{color:#7be3a1}
 .sub2 .r::before{content:"▼";font-size:.85em;margin-right:1px}
 .board:not(.stats) .tile .sub2{display:none}
+.board.ah .tile .sub2{display:none}
+.board.ah .tile .pct{text-shadow:none}
+.board.ah .tile .pct.long{font-size:.8em;letter-spacing:-.02em}
+.board.ah .tile.zero .pct{opacity:1}
 .board.stats .tile .pct{font-size:clamp(9px,2.1vw,17px)}
 .key:not(.stats) .st{display:none}
 .explain:not(.stats) .sv{display:none}
@@ -111,6 +115,12 @@ button.btn.primary:disabled{opacity:1;background:#2e2818;border-color:#4a4030;co
 .advice .tag{display:inline-block;background:var(--gold);color:#2a1d02;font-weight:800;font-size:12px;letter-spacing:.08em;border-radius:6px;padding:2px 8px;margin-right:4px;vertical-align:1px}
 .advice.setup-phase .hint{color:var(--text)}
 .advice p{margin:0}
+.advwrap{position:relative}
+.ahtog{position:absolute;top:8px;right:10px;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--gold-l);background:#141414;border:1px solid var(--gold-d);border-radius:8px;padding:4px 9px;cursor:pointer;user-select:none}
+.ahtog[hidden]{display:none}
+.ahtog input{accent-color:var(--best);width:16px;height:16px;margin:0}
+.advwrap.ah-on .advice p:first-child{padding-right:112px}
+.tile .ahs{font-size:clamp(7px,1.25vw,11px);font-weight:700;opacity:.85;margin-top:clamp(1px,.3vw,3px);line-height:1}
 .advice .hint{color:var(--muted);font-size:13px;margin-top:4px}
 .advice b{color:var(--gold-l)}
 
@@ -349,7 +359,10 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
     <button class="btn primary big" id="advBtn" type="button">Advisor<span class="long">: where should I click?</span></button>
     <button class="heatbtn" id="statBtn" type="button" aria-pressed="false" title="Show the ! chance, the opens chance and how much each click rules out on every tile"><span class="sw" aria-hidden="true"></span><span>Statistics<span class="long"> view</span></span></button>
   </div>
-  <div class="advice" id="advice" role="status" aria-live="polite"></div>
+  <div class="advwrap">
+    <div class="advice" id="advice" role="status" aria-live="polite"></div>
+    <label class="ahtog" id="ahTog" hidden title="Colour every tile by how many clicks it takes to finish the board if you click it now. The colours are relative to this board: brightest green = the Advisor's pick, darkest = the worst click."><input type="checkbox" id="ahBox"> Heatmap</label>
+  </div>
 
   <div class="board" id="board" aria-label="Game board"></div>
 
@@ -386,7 +399,7 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
         <div class="sv"><dt><span class="sub2"><span class="r">55</span></span></dt><dd><b>Rules out:</b> on average, a click here eliminates this share of the possible gift layouts. Higher = you learn more right now.</dd></div>
       </dl>
     </div>
-    <p class="note">The base view shows the name and gift chance. Turn on <b>Statistics view</b> for the !, opens and rules-out numbers (gift + ! + opens always add up to 100). Hover a tile (tap and hold on a phone) for the same numbers in words. With a mouse, the Advisor's pick is outlined in green while you hover over the board, even when the advice is hidden, and every tooltip shows how it compares.</p>
+    <p class="note">The base view shows the name and gift chance. Turn on <b>Statistics view</b> for the !, opens and rules-out numbers (gift + ! + opens always add up to 100). Hover a tile (tap and hold on a phone) for the same numbers in words. Tick <b>Heatmap</b> in the corner of the advice box to colour every tile by how many clicks it takes to finish the board if you click it now: bright green = the Advisor's pick, darker = more clicks, with the difference (+0.06 and so on) on each tile. The colours are relative to the current board, so even small differences show. With a mouse, the Advisor's pick is outlined in green while you hover over the board, even when the advice is hidden, and every tooltip shows how it compares.</p>
     <ol>
       <li><b>Tap one ✕ tile</b> from your game. The second one is placed automatically, since the game always puts it at the 180° mirror position.</li>
       <li><b>Set-up:</b> copy any tiles already open in your game by tapping them here: <b>1×</b> opened, <b>2×</b> !, <b>3×</b> gift, <b>4×</b> hidden again. New game? Skip it. Then tap <b>2 · Coaching</b> in the switch under the board. You can go back any time with <b>1 · Set up</b>.</li>
@@ -722,7 +735,8 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
   }
   const hist = [], redo = [];
   let sel = -1, showAdv = true;   // the Advisor is on by default; the button switches it off
-  let peek = false;   // mouse over the board: show the Advisor's pick even when advice is hidden
+  let peek = false;
+  let advHeat = false;   // Advisor heatmap: tiles coloured by clicks to finish (relative to this board)   // mouse over the board: show the Advisor's pick even when advice is hidden
   // Set-up (copying tiles by tapping) is a UI mode, not part of the board, so Undo never switches it.
   let editing = true;
   let stats = false;
@@ -1110,6 +1124,14 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
     const adv = (play && !xp && !done && !checks && (showAdv || heat)) ? advise() : null;
     const la = ((showAdv || peek) && adv && !adv.err && !edit) ? lookahead() : null;
 
+    const ah = advHeat && showAdv && la && !edit && !done && !checks;
+    let ahMin = 0, ahMax = 0;
+    if (ah) { const vs = S.st.map((x, k) => x === 'H' ? la.values[k] : undefined).filter(v => v !== undefined); ahMin = Math.min(...vs); ahMax = Math.max(...vs); }
+    const ahPos = v => ahMax - ahMin < 1e-9 ? 0 : Math.sqrt((v - ahMin) / (ahMax - ahMin));
+    // one green hue: bright = fewest clicks to finish, dark = most
+    // bright band for the tiles closest to the best (dark text), then a darker band (white text): every label stays readable
+    const ahL = u => Math.round(u < 0.2 ? 62 - 60 * u : 33 - 19 * (u - 0.2) / 0.8);
+    const ahColor = (u, dl) => `hsl(${145 + 5 * u} ${Math.round(64 - 50 * u)}% ${ahL(u) + dl}%)`;
     tiles.forEach((b, i) => {
       const s = S.st[i];
       let cls = 'tile ' + s, html = '', label = name(i), shown = 0;
@@ -1130,6 +1152,12 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
               (sh[0] === 100 ? '<span class="sub2"><span class="sure">sure</span></span>'
                 : `<span class="sub2"><span class="w">${sh[1]}</span><span class="e">${sh[2]}</span></span><span class="sub2"><span class="r">${rulesOut(h, adv.layouts)}</span></span>`);
           }
+          if (ah) {
+            const v = la.values[i], h = adv.split.get(i), ch = shares(h.G, h.W, h.E, adv.layouts)[0];
+            if (v === undefined) html = `<span class="pct">–</span><span class="ahs">${ch}%</span>`;
+            else { const t = v - ahMin < 0.00005 ? 'best' : '+' + fmtDiff(v - ahMin); html = `<span class="pct${t.length > 5 ? ' long' : ''}">${t}</span><span class="ahs">${ch}%</span>`; }
+            if (v !== undefined && v - ahMin >= 0.00005) label += `, ${fmtDiff(v - ahMin)} more clicks to finish than the best`;
+          }
           if (p === 0) cls += ' zero';
           if (la && showAdv && la.best.includes(i)) { cls += ' best'; label += la.best.length > 1 ? ', one of the equally good best clicks' : ', best next click'; }
           else if (la && peek && la.best.includes(i)) cls += ' peek';
@@ -1149,11 +1177,13 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
       const pr = shown;   // colour follows the number on the tile, so equal numbers always look equal
       const heated = heat && s === 'H' && adv && !adv.err;
       // All possible tiles equal: one calm colour instead of painting the whole board red.
-      const bg = heated ? heatHSL(pr, 0) : '';
-      const edge = i === sel ? '#ffffff' : heated && !cls.includes(' best') && !cls.includes(' peek') ? heatHSL(pr, 14) : '';
+      const ahv = ah && s === 'H' ? la.values[i] : undefined;
+      const ahU = ahv === undefined ? -1 : ahPos(ahv);
+      const bg = ah && s === 'H' ? (ahU < 0 ? 'hsl(40 6% 18%)' : ahColor(ahU, 0)) : heated ? heatHSL(pr, 0) : '';
+      const edge = i === sel ? '#ffffff' : ah && s === 'H' ? (cls.includes(' best') ? '' : ahU < 0 ? 'hsl(40 6% 26%)' : ahColor(ahU, 10)) : heated && !cls.includes(' best') && !cls.includes(' peek') ? heatHSL(pr, 14) : '';
       if (face.style.background !== bg) face.style.background = bg;
       if (hexEl.style.background !== edge) hexEl.style.background = edge;
-      face.style.color = bg ? (pr > 0 ? '#fffaf0' : '#8a8478') : '';
+      face.style.color = ah && s === 'H' ? (ahU < 0 ? '#aaa392' : ahL(ahU) >= 45 ? '#0b2414' : '#f2fbf5') : bg ? (pr > 0 ? '#fffaf0' : '#8a8478') : '';
       b.setAttribute('aria-label', label);
     });
 
@@ -1309,6 +1339,11 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
       ? '<span class="tag">SET-UP</span><span><span class="step">Step 1 of 2: place the ✕ tiles</span>Tap one of the <b>✕</b> tiles from your game. The second one is placed for you (always its 180° mirror).</span>'
       : `<span class="tag">SET-UP</span><span><span class="step">Step 2 of 2: copy your board, then start</span>${S.clicks ? 'Fix the tiles that differ from your game, then tap <b>2 · Coaching</b>.' : 'New game? Tap <b>2 · Coaching</b> now. Game in progress? First tap the tiles already open in your game: <b>1×</b> opened, <b>2×</b> !, <b>3×</b> gift.'}</span>`;
     renderSave();
+    const canAh = showAdv && la && !edit && !done && !checks && !xp;
+    $('ahTog').hidden = !canAh;
+    $('ahBox').checked = advHeat;
+    document.querySelector('.advwrap').classList.toggle('ah-on', !!canAh);
+    $('board').classList.toggle('ah', !!ah);
     refreshTip();
   }
 
@@ -1527,6 +1562,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
   // a touch-and-hold shows the explanation only; it does not click the tile
   $('board').addEventListener('click', e => { if (held) { e.stopImmediatePropagation(); held = false; } }, true);
   window.addEventListener('scroll', hideTip, { passive: true });
+  $('ahBox').addEventListener('change', () => { advHeat = $('ahBox').checked; render(); });
   $('advBtn').addEventListener('click', () => { showAdv = !showAdv; sel = -1; render(); });
   $('statBtn').addEventListener('click', () => {
     stats = !stats;
