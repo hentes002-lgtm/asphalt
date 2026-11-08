@@ -292,7 +292,7 @@
       <summary>How it works</summary>
       <div class="inner">
         <ul>
-          <li>Each 10-pull: pulls 1–9 hit a featured car at the drop chance; pull 10 always hits (for the Bolide pack you can switch the guarantee off).</li>
+          <li>Each 10-pull: pulls 1–9 hit a featured car at the drop chance; pull 10 always hits, in both the BOS and the Bolide packs.</li>
           <li>A hit is 4 blueprints (BOS packs) or 3 (Bolide pack) for one of the pack's cars at random, or 15 when "15-BP drops" is on.</li>
           <li>A car that maxes mid 10-pull stays in the pool until that 10-pull ends (extra hits become Trade Coins). After that, hits only go to cars still short of max.</li>
           <li>Key cars collect blueprints without the key; the key itself isn't modelled.</li>
@@ -339,7 +339,7 @@
   // pack types: how one 10-pull behaves
   var GROUPS = {
     bos: { name: 'Burst of Speed packs', hit: 4, prices: [750, 900], rates: [0.20, 0.15], guarFixed: true },
-    bol: { name: 'Bugatti Bolide pack', hit: 3, prices: [900], rates: [0.10, 0.15, 0.20], guarFixed: false }
+    bol: { name: 'Bugatti Bolide pack', hit: 3, prices: [900], rates: [0.10, 0.15, 0.20], guarFixed: true }
   };
   var PACKS = [
     { name: 'Pack #1', group: 'bos', cars: [
@@ -522,7 +522,7 @@
         seg([{ v: true, label: 'Yes' }, { v: false, label: 'No' }], g.guar, function (v) { g.guar = v; renderSettings(); changed(); }, id + '-g')]));
       box.appendChild(grid);
       var h = hitsPer10(g);
-      box.appendChild(el('p', { class: 'hint', style: 'margin:0', text: 'Average ' + bpPer10(grp).toFixed(2) + ' BP per 10-pull (' + h.toFixed(2) + ' hits' + (g.guar ? '; the 10th is guaranteed' : '') + '). ' + (grp === 'bos' ? 'Drop chance and 15-BP rate are unconfirmed: check the pack’s info screen.' : 'Drop chance, guarantee and 15-BP rate are unconfirmed; 10% is the wiki’s figure for car-specific packs.') }));
+      box.appendChild(el('p', { class: 'hint', style: 'margin:0', text: 'Average ' + bpPer10(grp).toFixed(2) + ' BP per 10-pull (' + h.toFixed(2) + ' hits' + (g.guar ? '; the 10th is guaranteed' : '') + '). ' + (grp === 'bos' ? 'Drop chance and 15-BP rate are unconfirmed: check the pack’s info screen.' : 'Drop chance and 15-BP rate are unconfirmed; 10% is the wiki’s figure for car-specific packs.') }));
       host.appendChild(box);
     });
     var first = host.querySelector('.set-title'); if (first) { first.style.borderTop = '0'; first.style.paddingTop = '0'; }
@@ -806,7 +806,7 @@
   function radicesV1() { var r = [3, 2, 2, 4, 4000]; V1.cars.forEach(function (g) { g.forEach(function (t) { r.push(t + 1, 6); }); }); return r; }
   function digitsV3() {
     var b = S.cfg.bos, l = S.cfg.bol;
-    var v = [maskOf(S.sel) - 1, b.price === 900 ? 1 : 0, b.rate === 0.15 ? 1 : 0, Math.max(0, X15.indexOf(b.x15)), GROUPS.bol.rates.indexOf(l.rate), Math.max(0, X15.indexOf(l.x15)), l.guar ? 0 : 1, Math.min(1999, Math.round(S.tokens / 500)), Math.max(0, PATIENCE.indexOf(S.patient))];
+    var v = [maskOf(S.sel) - 1, b.price === 900 ? 1 : 0, b.rate === 0.15 ? 1 : 0, Math.max(0, X15.indexOf(b.x15)), GROUPS.bol.rates.indexOf(l.rate), Math.max(0, X15.indexOf(l.x15)), 0, Math.min(1999, Math.round(S.tokens / 500)), Math.max(0, PATIENCE.indexOf(S.patient))];
     PACKS.forEach(function (p, pi) { p.cars.forEach(function (c, ci) { var st = S.cars[pi][ci]; v.push(st.cum, Math.max(1, Math.min(6, st.goal)) - 1); }); });
     return v;
   }
@@ -833,7 +833,7 @@
     }
     v = unpack(B(d.slice(0, 30)), radicesV3()); if (!v) return null;
     o.sel = selOf(v[0] + 1); cfg.bos.price = v[1] ? 900 : 750; cfg.bos.rate = v[2] ? 0.15 : 0.20; cfg.bos.x15 = X15[v[3]];
-    cfg.bol.rate = GROUPS.bol.rates[v[4]]; cfg.bol.x15 = X15[v[5]]; cfg.bol.guar = !v[6]; o.tokens = v[7] * 500; o.patient = PATIENCE[v[8]]; k = 9;
+    cfg.bol.rate = GROUPS.bol.rates[v[4]]; cfg.bol.x15 = X15[v[5]]; cfg.bol.guar = true; o.tokens = v[7] * 500; o.patient = PATIENCE[v[8]]; k = 9;
     PACKS.forEach(function (p) { o.cars.push(p.cars.map(function () { var x = { cum: v[k], goal: v[k + 1] + 1 }; k += 2; return x; })); });
     return o;
   }
@@ -850,7 +850,7 @@
     var bos = c.bos || { price: o.price, rate: o.rate, x15: o.x15 }, bol = c.bol || {};
     S.cfg = {
       bos: { price: pick(bos.price, GROUPS.bos.prices, 750), rate: pick(bos.rate, GROUPS.bos.rates, 0.20), x15: pick(bos.x15, X15, 0), guar: true },
-      bol: { price: 900, rate: pick(bol.rate, GROUPS.bol.rates, d.bol.rate), x15: pick(bol.x15, X15, 0), guar: bol.guar !== false }
+      bol: { price: 900, rate: pick(bol.rate, GROUPS.bol.rates, d.bol.rate), x15: pick(bol.x15, X15, 0), guar: true }
     };
     if (Array.isArray(o.sel) && o.sel.some(Boolean)) S.sel = [0, 1, 2].map(function (i) { return !!o.sel[i]; });
     else if (o.view === 2 && !c.bos) S.sel = selOf(3); // oldest saves: view 2 meant both BOS packs
