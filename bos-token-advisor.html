@@ -604,7 +604,7 @@
       if (from !== 'sel') sSel.value = String(stars);
       bpLbl.textContent = full ? 'Blueprints' : 'BP to ' + (stars + 1) + '★ (/' + req + ')';
       // a phone keyboard opening fires resize: never overwrite the field the user is typing in
-      if (from !== 'bp' && !(from === 'resync' && document.activeElement === bpIn)) bpIn.value = full ? '' : String(extra);
+      if (from !== 'bp' && !(from === 'resync' && document.activeElement === bpIn)) bpIn.value = (full || !extra) ? '' : String(extra);
       bpIn.disabled = full; bpIn.placeholder = full ? 'MAX' : '0';
       minus.disabled = st.cum <= 0; plus.disabled = full;
       goals.textContent = '';
@@ -619,13 +619,14 @@
       else if (need > 0) status.appendChild(el('span', { class: 'ok', text: 'Event covers it' }));
       else status.appendChild(el('span', { class: 'ok', text: full ? 'Maxed' : 'Goal reached' }));
       // Wild Card tip: packs pay out in fixed steps (4 or 3 BP); if the gap isn't a multiple of that step, the last hit is partly wasted
-      var left = need - fromEvent, r = left % HIT;
+      // key cars can't take Wild Cards; BP-unlock cars only once unlocked
+      var left = need - fromEvent, r = left % HIT, wcOk = !isKey(c) && stars >= 1;
       wild.textContent = '';
-      if (left > 0 && r > 0 && stars >= 1) {
+      if (wcOk && left > 0 && r > 0) {
         var hits = Math.ceil(left / HIT);
         wild.appendChild(el('b', { text: 'Wild Card tip: ' }));
         wild.appendChild(document.createTextNode('+' + r + ' BP → ' + (left - r) + ' = ' + (hits - 1) + ' × ' + HIT + ', one hit less (same class & star).'));
-      } else if (left > 0 && r === 0) wild.appendChild(document.createTextNode('Wild Cards: none needed (' + left + ' = ' + (left / HIT) + ' × ' + HIT + ').'));
+      } else if (wcOk && left > 0 && r === 0) wild.appendChild(document.createTextNode('Wild Cards: none needed (' + left + ' = ' + (left / HIT) + ' × ' + HIT + ').'));
       wild.hidden = !wild.textContent;
     }
 
@@ -930,6 +931,11 @@
   $('codeIn').addEventListener('input', function () {
     var d = $('codeIn').value.replace(/\D/g, '').slice(0, 32), f = d.replace(/(\d{4})(?=\d)/g, '$1 ');
     if (f !== $('codeIn').value) $('codeIn').value = f;
+  });
+  // focusing a number field selects its value, so the next digit replaces it instead of being added to it
+  document.addEventListener('focusin', function (e) {
+    var t = e.target; if (!t || t.tagName !== 'INPUT' || (t.type !== 'number' && t.id !== 'codeIn')) return;
+    setTimeout(function () { try { if (document.activeElement === t) t.select(); } catch (_) {} }, 0);
   });
   document.addEventListener('wheel', function (e) { var a = document.activeElement; if (a && a.type === 'number' && e.target === a) a.blur(); }, { passive: true });
   window.addEventListener('beforeunload', function (e) { if (dirty && savedAt) { e.preventDefault(); e.returnValue = ''; } });
