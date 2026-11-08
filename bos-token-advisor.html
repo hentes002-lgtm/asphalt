@@ -619,8 +619,8 @@
       else if (need > 0) status.appendChild(el('span', { class: 'ok', text: 'Event covers it' }));
       else status.appendChild(el('span', { class: 'ok', text: full ? 'Maxed' : 'Goal reached' }));
       // Wild Card tip: packs pay out in fixed steps (4 or 3 BP); if the gap isn't a multiple of that step, the last hit is partly wasted
-      // key cars can't take Wild Cards; BP-unlock cars only once unlocked
-      var left = need - fromEvent, r = left % HIT, wcOk = !isKey(c) && stars >= 1;
+      // no Wild Cards for key cars, for locked cars, or for A/S-class cars at 5★ (there is no 5★ A/S Wild Card)
+      var left = need - fromEvent, r = left % HIT, wcOk = !isKey(c) && stars >= 1 && !(stars === 5 && (c.cls === 'A' || c.cls === 'S'));
       wild.textContent = '';
       if (wcOk && left > 0 && r > 0) {
         var hits = Math.ceil(left / HIT);
