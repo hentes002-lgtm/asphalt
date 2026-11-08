@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BOS Token Advisor — Black Friday 2026</title>
+<meta name="description" content="Plan your Asphalt Legends Burst of Speed (Black Friday 2026) pulls: tokens needed, a safe budget and your odds, simulated for your own garage.">
+<meta name="theme-color" content="#0D1015">
+<meta property="og:title" content="BOS Token Advisor · Black Friday 2026">
+<meta property="og:description" content="Tokens needed, a safe budget and your odds for the Burst of Speed packs, for your own garage.">
+<style>
+  :root{
+    --bg:#0D1015; --surface:#161A21; --surface2:#1D222B; --raise:#232935; --line:#2A303B; --line2:#20252E;
+    --text:#ECEFF4; --text2:#C9D0DA; --muted:#9BA5B3; --dim:#7A8494;
+    --have:#4CC9F0; --need:#FF8A3D; --need-soft:rgba(255,138,61,.28); --ink:#140A02;
+    --good:#5BD08A; --warn:#FFB454; --bad:#FF6B6B; --bar-off:#3C4452;
+    --r:14px;
+    --body:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --head:ui-rounded,'SF Pro Rounded',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-text-size-adjust:100%}
+  body{padding-bottom:84px}
+  @media (min-width:960px){body{padding-bottom:0}}
+  a{color:var(--have)} a:hover{color:#8FDDF6}
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--have);outline-offset:2px;border-radius:6px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  h1,h2,h3{font-family:var(--head);margin:0;letter-spacing:-.01em}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .wrap{max-width:1200px;margin:0 auto;padding:18px 14px 28px;display:flex;flex-direction:column;gap:14px}
+
+  header h1{font-size:22px;display:flex;align-items:center;gap:8px}
+  header .sub{color:var(--muted);font-size:13px;margin-top:3px;line-height:1.45}
+
+  /* view tabs */
+  .patience{display:flex;flex-direction:column;gap:10px}
+  .patbtn{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text2);font-weight:700;cursor:pointer}
+  .patbtn.on{border-color:var(--good);color:var(--good);background:rgba(91,208,138,.08)}
+  .patbtn[aria-expanded="true"]{box-shadow:inset 0 0 0 1px currentColor}
+  .patpanel{display:flex;flex-direction:column;gap:10px}
+  .patpanel[hidden]{display:none}
+  #patSeg .seg button{white-space:pre-line;line-height:1.2;padding:6px 4px;min-height:48px}
+  .tabs{display:flex;flex-direction:column;gap:8px}
+  .tabs-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .tabs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .tab .t{display:flex;align-items:center;gap:8px}
+  .ck{flex:none;width:20px;height:20px;border-radius:6px;border:2px solid #4A5363;display:inline-flex;align-items:center;justify-content:center;font-size:13px;line-height:1;color:var(--ink)}
+  .tab[aria-pressed="true"] .ck{background:var(--need);border-color:var(--need)}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .qbtn{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text2);font-weight:600;font-size:13px;cursor:pointer}
+  .qbtn[aria-pressed="true"]{border-color:var(--need);color:var(--need)}
+  .wild{margin:-6px 0 0;font-size:11.5px;line-height:1.4;color:var(--muted);text-align:right}
+  .wild b{color:var(--have);font-weight:600}
+  .wild[hidden]{display:none}
+  .tab{appearance:none;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:11px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:72px;min-width:0}
+  .tab[aria-selected="true"]{border-color:var(--need);box-shadow:inset 0 0 0 1px var(--need)}
+  .tab .t{font-weight:700;font-size:15px}
+  .tab .c{color:var(--muted);font-size:12px;line-height:1.35}
+  .tab .pbar{height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+  .tab .pbar i{display:block;height:100%;background:var(--have)}
+  .tab .m{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  @media (max-width:520px){.tab .c{display:none}}
+
+  .layout{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+  .left{flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:12px}
+  .right{flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:12px}
+  @media (min-width:960px){.right{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;scrollbar-width:thin}}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+  .label{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+  .hint{color:var(--muted);font-size:12.5px;line-height:1.45}
+  .group-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:6px 2px 0}
+  .group-title h2{font-size:17px}
+
+  .settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  @media (min-width:700px){.settings{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .set-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-top:1px solid var(--line2);padding-top:12px}
+  .set-title h2{font-size:15px}
+  .fixed{height:44px;display:flex;align-items:center;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--text2);font-weight:700}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .seg{display:flex;gap:3px;padding:3px;background:var(--bg);border:1px solid var(--line);border-radius:11px}
+  .seg button{flex:1 1 0;min-width:0;min-height:40px;border:0;border-radius:8px;background:transparent;color:var(--text2);font-weight:600;cursor:pointer;padding:0 4px;white-space:nowrap}
+  .seg button[aria-pressed="true"]{background:var(--raise);color:var(--text);box-shadow:inset 0 0 0 1px #3A4250}
+  select,input[type=number],input[type=text]{height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:0 10px;font-weight:600;font-size:16px;width:100%;min-width:0}
+  input[type=number]{text-align:right;font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield}
+  input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  main{display:flex;flex-direction:column;gap:14px}
+
+  /* car */
+  .car{display:flex;flex-direction:column;gap:14px}
+  .car-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .car-name{display:flex;align-items:center;gap:10px;min-width:0}
+  .car-name b{font-size:16px;line-height:1.25}
+  .cls{flex:none;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:#1E2C38;color:var(--have);font:700 13px var(--head)}
+  .chip{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .status{font-size:13px;color:var(--text2);text-align:right}
+  .status strong{color:var(--text);font-variant-numeric:tabular-nums}
+  .ok{color:var(--good);font-weight:700}
+
+  .track-row{display:flex;align-items:flex-end;gap:10px}
+  .track{position:relative;flex:1 1 auto;min-width:0;padding-top:26px}
+  .ticks{position:absolute;left:14px;right:14px;top:0;height:26px;pointer-events:none}
+  .tick{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px}
+  .tick span{font:600 11px var(--body);color:var(--muted);white-space:nowrap}
+  .tick i{display:block;width:2px;height:8px;border-radius:2px;background:var(--line)}
+  .tick.reached span{color:var(--have)} .tick.reached i{background:var(--have)}
+  .tick.goal span{color:var(--need)} .tick.goal i{background:var(--need);height:10px}
+  .slider{position:relative;height:44px;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+  .rail{position:absolute;left:14px;right:14px;top:17px;height:10px;border-radius:999px}
+  .thumb{position:absolute;top:8px;width:28px;height:28px;margin-left:-14px;border-radius:50%;background:#fff;border:4px solid var(--have);box-shadow:0 1px 5px rgba(0,0,0,.55);cursor:grab;touch-action:none}
+  .thumb::before{content:"";position:absolute;inset:-10px;border-radius:50%}
+  .thumb.drag{cursor:grabbing;transform:scale(1.12);box-shadow:0 0 0 8px rgba(76,201,240,.18)}
+  .thumb.nudge{animation:nudge .45s}
+  @keyframes nudge{25%{translate:-5px 0}75%{translate:5px 0}}
+  .slide-hint{position:absolute;left:50%;bottom:-3px;transform:translateX(-50%);font-size:11.5px;color:var(--have);white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}
+  .slide-hint.on{opacity:1}
+  .maxbox{flex:none;width:64px;height:44px;border-radius:10px;border:1px dashed #4A5363;background:var(--bg);color:var(--text2);font:700 13px var(--head);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+  .maxbox small{font:600 10px var(--body);color:var(--muted)}
+  .maxbox.goal{border-color:var(--need)}
+  .maxbox[aria-pressed="true"]{border:1px solid var(--good);color:var(--good);background:rgba(91,208,138,.08)}
+
+  .exact{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:10px}
+  .exact .goalf{grid-column:1 / -1}
+  .step{display:flex;gap:6px}
+  .step button{flex:none;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);font-size:18px;cursor:pointer}
+  .step button:disabled{opacity:.35;cursor:not-allowed}
+  .goals{display:flex;gap:4px}
+  .goals button{flex:1 1 0;min-width:0;min-height:40px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--text2);font-weight:700;cursor:pointer}
+  .goals button[aria-pressed="true"]{background:var(--need);border-color:var(--need);color:var(--ink)}
+  .goals button:disabled{opacity:.3;cursor:not-allowed}
+
+  /* result */
+  .right{transition:opacity .15s}
+  .right.stale .hero,.right.stale #hist,.right.stale #perCar{opacity:.45}
+  .hero{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .hero .v{font:700 clamp(24px,7.4vw,34px)/1.05 var(--head);font-variant-numeric:tabular-nums}
+  .hero .s{color:var(--muted);font-size:12.5px;margin-top:3px}
+  .meter{height:10px;border-radius:999px;background:#252B35;overflow:hidden}
+  .meter i{display:block;height:100%;border-radius:999px;transition:width .2s}
+  .hist{display:flex;align-items:flex-end;gap:2px;height:90px;border-bottom:1px solid var(--line)}
+  .hist i{flex:1 1 0;border-radius:3px 3px 0 0;min-height:2px}
+  .legend{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:11.5px;flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{color:var(--muted);font-weight:600;text-align:left;padding:7px 4px;border-bottom:1px solid var(--line);font-size:12px}
+  td{padding:9px 4px;border-bottom:1px solid var(--line2)}
+  tr.grp td{color:var(--muted);font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding-top:12px}
+  .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .btn{min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+  .btn:hover{border-color:#3C4452}
+  .btn.primary{background:var(--need);border-color:var(--need);color:var(--ink)}
+  .btn .dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:none}
+  .btn.dirty .dot{display:inline-block}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .actions .btn{flex:1 1 auto;justify-content:center}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,10px);background:#22303A;border:1px solid #2F4D5E;color:var(--text);padding:10px 14px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9;max-width:calc(100vw - 28px);text-align:center}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  @media (min-width:960px){.toast{bottom:24px}}
+
+  details.box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:2px 16px}
+  details.box > summary{cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;font-weight:600;list-style:none}
+  details.box > summary::-webkit-details-marker{display:none}
+  details.box > summary::after{content:"+";font:600 20px var(--body);color:var(--muted)}
+  details.box[open] > summary::after{content:"−"}
+  .inner{padding:0 0 14px;display:flex;flex-direction:column;gap:10px}
+  .inner ul{margin:0;padding-left:18px;color:var(--text2);font-size:13.5px;line-height:1.6}
+
+  .math{font-size:13.5px;line-height:1.55;color:var(--text2);display:flex;flex-direction:column;gap:12px}
+  .math .mh{font-size:14px;color:var(--text)}
+  .math .eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;white-space:pre-wrap;color:var(--text)}
+  .math .eq b{color:var(--need);font-weight:700}
+
+  .code{font:700 18px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.06em;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;word-spacing:.35em;-webkit-user-select:all;user-select:all}
+  #codeIn{font:600 16px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.04em}
+
+  footer{border-top:1px solid var(--surface2);padding:18px 0 4px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+  footer .recruit{margin:0;font:600 16px var(--head);color:var(--text)}
+  footer .recruit b{letter-spacing:.32em;color:var(--need);margin-right:-.32em}
+  .social{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .social a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);text-decoration:none;font-weight:600}
+  .social a:hover{border-color:#3C4452;color:var(--text)}
+
+  .dock{position:fixed;left:0;right:0;bottom:0;z-index:5;background:rgba(13,16,21,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+  .dock-in{display:flex;align-items:center;gap:12px;max-width:1200px;margin:0 auto}
+  .dock a{flex:1 1 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;text-decoration:none;color:var(--text);min-height:48px}
+  .dock .d{display:flex;flex-direction:column}
+  .dock .d b{font:700 18px var(--head);font-variant-numeric:tabular-nums}
+  .dock .d span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+  .dock .btn{flex:none;width:52px;justify-content:center;padding:0;position:relative}
+  .dock .btn .dot{position:absolute;top:7px;right:7px}
+  .dock .btn:not(.dirty){background:var(--surface2);border-color:var(--line);color:var(--good)}
+  @media (min-width:960px){.dock{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF8A3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>BOS Token Advisor</h1>
+  <div class="sub">Black Friday 2026 · Burst of Speed and Bugatti Bolide packs. <b>1</b> Pick a pack · <b>2</b> set each car (drag the handle or type) and its goal · <b>3</b> enter your tokens. Runs in your browser; nothing is sent anywhere.</div>
+</header>
+
+<main>
+<section class="patience" aria-label="Patience">
+  <button type="button" class="patbtn" id="patBtn" aria-expanded="false" aria-controls="patPanel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><span id="patLbl">I&rsquo;m patient</span></button>
+  <div class="card patpanel" id="patPanel" hidden>
+    <p style="margin:0;font-weight:700" id="patQ">How patient are you?</p>
+    <div id="patSeg"></div>
+    <p class="hint" style="margin:0">If you play the Bolide special event, you also earn free blueprints for the Burst of Speed cars (not for the Bolide itself). Pick how many you expect per car: they are counted before any pack is bought, so you need fewer packs.</p>
+  </div>
+</section>
+<nav class="tabs" aria-label="Packs" id="tabs"></nav>
+
+<div class="layout">
+  <div class="left">
+    <section class="card" aria-label="Your tokens and pack settings" style="display:flex;flex-direction:column;gap:14px">
+      <label class="field">
+        <span class="label">Your tokens</span>
+        <input id="tokens" type="number" min="0" max="9999999" step="750" inputmode="numeric" placeholder="e.g. 40000">
+      </label>
+      <div id="settings" style="display:flex;flex-direction:column;gap:14px"></div>
+    </section>
+    <div id="cars" style="display:flex;flex-direction:column;gap:12px"></div>
+  </div>
+
+  <aside class="right" id="result" aria-label="Result">
+    <section class="card" style="display:flex;flex-direction:column;gap:16px">
+      <div class="hero" aria-live="polite">
+        <div>
+          <div class="label" id="heroTitle">Typical</div>
+          <div class="v" style="color:var(--need)" id="p50">–</div>
+          <div class="s" id="p50s">tokens</div>
+        </div>
+        <div>
+          <div class="label">Safe · 9 in 10</div>
+          <div class="v" id="p90">–</div>
+          <div class="s" id="p90s">tokens</div>
+        </div>
+      </div>
+
+      <p class="hint" style="margin:-6px 0 0">Typical: half of players finish within this. Safe: 9 in 10 do.</p>
+
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+          <span style="font-weight:600;font-size:14px" id="chanceLbl">Chance to reach all goals</span>
+          <span style="font:700 22px var(--head)" id="chance">–</span>
+        </div>
+        <div class="meter" role="img" id="meterWrap" aria-label="Chance"><i id="meter" style="width:0"></i></div>
+        <span class="hint" id="chanceText">Enter your tokens to see your odds.</span>
+      </div>
+
+      <figure style="margin:0;display:flex;flex-direction:column;gap:6px">
+        <figcaption class="label" id="histCap">10-pulls needed · 6,000 simulated runs</figcaption>
+        <div class="hist" id="hist" role="img" aria-label="Distribution of 10-pulls needed"></div>
+        <div class="legend"><span id="hMin"></span><span><span style="color:var(--need)">■</span> affordable · <span style="color:var(--bar-off)">■</span> not yet</span><span id="hMax"></span></div>
+      </figure>
+
+      <div>
+        <table aria-label="Per car">
+          <thead><tr><th>Car</th><th class="num">Need</th><th class="num">Done by</th><th class="num" id="spendHead">If you spend</th></tr></thead>
+          <tbody id="perCar"></tbody>
+        </table>
+        <p class="hint" style="margin:8px 0 0" id="perCarHint"></p>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" type="button" id="saveBtn"><span class="dot" aria-hidden="true"></span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg><span id="saveLbl">Save</span></button>
+        <button class="btn" type="button" id="copyBtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+        <button class="btn" type="button" id="shareBtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Share link</button>
+        <button class="btn" type="button" id="resetBtn">Reset</button>
+      </div>
+      <span class="hint" id="saveState" style="margin-top:-8px">Not saved yet</span>
+    </section>
+
+    <details class="box" id="mathBox">
+      <summary>Show the calculation</summary>
+      <div class="inner math" id="math"></div>
+    </details>
+
+    <details class="box">
+      <summary>Backup code &amp; other devices</summary>
+      <div class="inner">
+        <p class="hint" style="margin:0">Save keeps everything in this browser. To move it to another phone, write down or copy this code and enter it there, or use <b>Share link</b>. Tokens are rounded to 500.</p>
+        <div class="code" id="codeOut" aria-label="Your backup code"></div>
+        <div class="actions"><button class="btn" type="button" id="codeCopy">Copy code</button><button class="btn" type="button" id="clearSave">Delete saved data</button></div>
+        <label class="field"><span class="label">Enter a code</span><input type="text" id="codeIn" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="0000 0000 0000 0000 …"></label>
+        <div><button class="btn" type="button" id="codeLoad">Load code</button></div>
+      </div>
+    </details>
+
+    <details class="box">
+      <summary>How it works</summary>
+      <div class="inner">
+        <ul>
+          <li>Each 10-pull: pulls 1–9 hit a featured car at the drop chance; pull 10 always hits (for the Bolide pack you can switch the guarantee off).</li>
+          <li>A hit is 4 blueprints (BOS packs) or 3 (Bolide pack) for one of the pack's cars at random, or 15 when "15-BP drops" is on.</li>
+          <li>A car that maxes mid 10-pull stays in the pool until that 10-pull ends (extra hits become Trade Coins). After that, hits only go to cars still short of max.</li>
+          <li>Key cars collect blueprints without the key; the key itself isn't modelled.</li>
+          <li>Typical: half of 6,000 simulated runs finish within it. Safe: 9 in 10 do.</li>
+          <li>The 15-BP rate isn't published; 0.4% is what the community figure of 11.33 BP per 10-pull implies. The Bolide pack's 10% default is the wiki's figure for car-specific packs.</li>
+          <li>Share links carry your garage in the address (<code>?code=</code> or <code>#code-</code>). Opening one loads that garage without touching your saved one until you tap Save.</li>
+          <li>Car data: <a href="https://asec.tools/cars">ASEC</a>, <a href="https://asphalt9.info/">asphalt9.info</a>, <a href="https://asphalt.fandom.com/">Asphalt Wiki</a>. Drop chance and prices are player-reported. Fan-made, not affiliated with Gameloft.</li>
+        </ul>
+      </div>
+    </details>
+  </aside>
+</div>
+</main>
+
+<footer>
+  <p class="recruit"><b>UNITY</b> is recruiting. Join us on Discord!</p>
+  <div class="social">
+    <a href="https://discord.gg/QVrAJPC"><svg width="20" height="20" viewBox="0 0 24 24" fill="#8C9EFF" aria-hidden="true"><path d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18.2 18.2 0 0 0-5.6 0L8.6 3a19.5 19.5 0 0 0-4.9 1.5C.6 9.1-.3 13.7.2 18.2A19.7 19.7 0 0 0 6.2 21l1.3-2a12.8 12.8 0 0 1-2-1l.5-.4a14 14 0 0 0 12 0l.5.4c-.6.4-1.3.7-2 1l1.3 2a19.6 19.6 0 0 0 6-2.8c.5-5.2-.9-9.8-3.5-13.8ZM8.3 15.5c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.1 1.1 2.1 2.4-.9 2.4-2.1 2.4Zm7.4 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.1 1.1 2.1 2.4-.9 2.4-2.1 2.4Z"/></svg>Discord</a>
+    <a href="https://www.youtube.com/@UNITYTM"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#FF4E45" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.4-1.6.5-3.2.5-4.8s-.1-3.2-.5-4.8Z"/><path fill="#fff" d="m9.75 15.02 5.75-3.02-5.75-3.02v6.04Z"/></svg>YouTube</a>
+  </div>
+</footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<aside class="dock" aria-label="Summary">
+  <div class="dock-in">
+    <a href="#result">
+      <div class="d"><span>Typical</span><b id="dP50" style="color:var(--need)">–</b></div>
+      <div class="d"><span>Safe</span><b id="dP90">–</b></div>
+      <div class="d"><span>Chance</span><b id="dCh">–</b></div>
+    </a>
+    <button class="btn primary" type="button" id="dockSave" aria-label="Save"><span class="dot" aria-hidden="true"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg></button>
+  </div>
+</aside>
+
+<script>
+(function () {
+  'use strict';
+  var PULLS = 10, RUNS = 6000, SPEND_RUNS = 3000, CAP = 3000;
+  var X15 = [0, 0.0042, 0.01, 0.02];
+  var X15_LABEL = ['Off (safest)', '0.4% of hits', '1% of hits', '2% of hits'];
+
+  // pack types: how one 10-pull behaves
+  var GROUPS = {
+    bos: { name: 'Burst of Speed packs', hit: 4, prices: [750, 900], rates: [0.20, 0.15], guarFixed: true },
+    bol: { name: 'Bugatti Bolide pack', hit: 3, prices: [900], rates: [0.10, 0.15, 0.20], guarFixed: false }
+  };
+  var PACKS = [
+    { name: 'Pack #1', group: 'bos', cars: [
+      { name: 'Tushek Aeon E', short: 'Aeon E', cls: 'S', bp: [35, 40, 45, 50, 60, 70] },
+      { name: 'SSC Tuatara', short: 'Tuatara', cls: 'S', bp: [null, 40, 45, 60, 70, 85] },
+      { name: 'Mercedes-Benz Vision One-Eleven', short: 'One-Eleven', cls: 'A', bp: [null, 30, 40, 50, 65, 80] }
+    ]},
+    { name: 'Pack #2', group: 'bos', cars: [
+      { name: 'Zenvo Aurora Tur', short: 'Aurora Tur', cls: 'S', bp: [85, 25, 29, 38, 54, 69] },
+      { name: 'Deus Vayanne', short: 'Vayanne', cls: 'S', bp: [null, 40, 45, 60, 70, 85] },
+      { name: 'Porsche 919 Street', short: '919 Street', cls: 'A', bp: [null, 40, 45, 50, 60, 75] }
+    ]},
+    { name: 'Bolide', group: 'bol', cars: [
+      { name: 'Bugatti Bolide', short: 'Bolide', cls: 'S', bp: [null, 40, 45, 60, 70, 85] }
+    ]}
+  ];
+  var MASK_OF_VIEW = [1, 2, 4, 7]; // older saves/codes used one view index (0, 1, Bolide, all)
+
+  // ---------- car math ----------
+  var isKey = function (c) { return c.bp[0] === null; };
+  var maxS = function (c) { return c.bp.length; };
+  var total = function (c) { return c.bp.reduce(function (s, v) { return s + (v || 0); }, 0); };
+  var cumAt = function (c, s) { var t = 0; for (var i = 0; i < s && i < c.bp.length; i++) t += c.bp[i] || 0; return t; };
+  var minStars = function (c) { return isKey(c) ? 1 : 0; };
+  function starsOf(c, cum) { var s = minStars(c); for (var i = s; i < c.bp.length; i++) { if (cum >= cumAt(c, i + 1)) s = i + 1; else break; } return s; }
+  var extraOf = function (c, cum) { return cum - cumAt(c, starsOf(c, cum)); };
+  var nextReq = function (c, s) { return s < c.bp.length ? c.bp[s] : 0; };
+  var fmt = function (n) { return Math.round(n).toLocaleString('en-US'); };
+  function starLabel(c, s) { return s === 0 ? 'Locked' : (s === 1 && isKey(c) ? '1★ key' : s + '★'); }
+  function stateLabel(c, cum) { var s = starsOf(c, cum); return s >= maxS(c) ? 'MAX' : starLabel(c, s) + (extraOf(c, cum) ? ' +' + extraOf(c, cum) : ''); }
+  function goalLabel(c, g) { return g >= maxS(c) ? 'MAX' : g + '★'; }
+
+  function fresh(p) { return p.cars.map(function (c) { return { cum: 0, goal: maxS(c) }; }); }
+  function freshCfg() { return { bos: { price: 750, rate: 0.20, x15: 0, guar: true }, bol: { price: 900, rate: 0.10, x15: 0, guar: true } }; }
+  var PATIENCE = [0, 3, 8]; // free blueprints per car expected from the Bolide special event
+  var S = { sel: [true, false, false], tokens: 0, patient: 0, cfg: freshCfg(), cars: PACKS.map(fresh) };
+  var maskOf = function (sel) { return (sel[0] ? 1 : 0) | (sel[1] ? 2 : 0) | (sel[2] ? 4 : 0); };
+  var selOf = function (m) { return [!!(m & 1), !!(m & 2), !!(m & 4)]; };
+  // patience = free blueprints from the Bolide special event for the Burst of Speed cars (never for the Bolide itself)
+  var eventBP = function (pi) { return PACKS[pi].group === 'bos' ? S.patient : 0; };
+  function eventStart(c, st, pi) { return Math.min(total(c), st.cum + eventBP(pi)); }
+  var packsInView = function () { return [0, 1, 2].filter(function (i) { return S.sel[i]; }); };
+  var multi = function () { return packsInView().length > 1; };
+  var cfgOf = function (pi) { return S.cfg[PACKS[pi].group]; };
+  var hitsPer10 = function (g) { return (PULLS - 1) * g.rate + (g.guar ? 1 : g.rate); };
+  var bpPer10 = function (grp) { var g = S.cfg[grp]; return hitsPer10(g) * (GROUPS[grp].hit + (15 - GROUPS[grp].hit) * g.x15); };
+
+  // ---------- simulation (pure; runs in a background Web Worker so the page never freezes) ----------
+  function SIMLIB() {
+    function rng(seed) { var a = seed >>> 0; return function () { a = (a + 0x6D2B79F5) >>> 0; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+    function seedOf(a) { return a.reduce(function (h, b) { return (Math.imul(h, 31) + b) | 0; }, 17); }
+    var POOL = new Int32Array(8);
+    // one 10-pull: the pool is fixed at its start (a car that maxes mid-pull still soaks up hits until the pull ends)
+    function openTen(cum, pk, PULLS, r) {
+      var n = 0, i, k, c, v, max = pk.max;
+      for (i = 0; i < cum.length; i++) if (cum[i] < max[i]) POOL[n++] = i;
+      if (!n) return;
+      for (k = 1; k <= PULLS; k++) if ((pk.guar && k === PULLS) || r() < pk.rate) {
+        c = POOL[(r() * n) | 0];
+        v = cum[c] + ((pk.x15 > 0 && r() < pk.x15) ? 15 : pk.hit);
+        cum[c] = v < max[c] ? v : max[c];
+      }
+    }
+    function seedFor(pk, extra) { return seedOf(pk.start.concat(pk.goal, extra, [pk.pi, Math.round(pk.rate * 100), Math.round(pk.x15 * 1e4), pk.hit, pk.guar ? 1 : 0])); }
+    function simGoal(pk, o) {
+      var n = pk.start.length, i, r = rng(seedFor(pk, []));
+      var packs = new Array(o.RUNS), per = []; for (i = 0; i < n; i++) per.push(new Array(o.RUNS));
+      var cum = new Array(n), fin = new Array(n);
+      for (var run = 0; run < o.RUNS; run++) {
+        var done = 0, t = 0;
+        for (i = 0; i < n; i++) { cum[i] = pk.start[i]; fin[i] = cum[i] >= pk.goal[i] ? 0 : -1; if (!fin[i]) done++; }
+        while (done < n && t < o.CAP) { openTen(cum, pk, o.PULLS, r); t++; for (i = 0; i < n; i++) if (fin[i] < 0 && cum[i] >= pk.goal[i]) { fin[i] = t; done++; } }
+        packs[run] = t; for (i = 0; i < n; i++) per[i][run] = fin[i] < 0 ? o.CAP : fin[i];
+      }
+      return { packs: packs, per: per, need: pk.goal.map(function (g, j) { return g - pk.start[j]; }) };
+    }
+    function simSpend(pk, k, o) {
+      var n = pk.start.length, i, r = rng(seedFor(pk, [k, 99]));
+      var fin = [], hit = []; for (i = 0; i < n; i++) { fin.push(new Array(o.SPEND_RUNS)); hit.push(0); }
+      for (var run = 0; run < o.SPEND_RUNS; run++) {
+        var cum = pk.start.slice(); for (var t = 0; t < k; t++) openTen(cum, pk, o.PULLS, r);
+        for (i = 0; i < n; i++) { fin[i][run] = cum[i]; if (cum[i] >= pk.goalUser[i]) hit[i]++; }
+      }
+      return { fin: fin, hit: hit };
+    }
+    function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }); return s[Math.floor(s.length / 2)]; }
+    function run(o) {
+      var res = o.packs.map(function (pk) { return simGoal(pk, o); }), cost = new Array(o.RUNS), i, j;
+      // cost per run in tokens (packs can have different prices)
+      for (i = 0; i < o.RUNS; i++) { cost[i] = 0; for (j = 0; j < res.length; j++) cost[i] += res[j].packs[i] * o.packs[j].price; }
+      var need = res.reduce(function (a, r) { return a + r.need.reduce(function (x, y) { return x + y; }, 0); }, 0), split = null, spend = null;
+      if (o.tokens > 0 && need > 0) {
+        // split your tokens between packs in proportion to what each typically costs, then buy whole 10-pulls
+        var med = res.map(function (r, jj) { return median(r.packs) * o.packs[jj].price; }), sm = med.reduce(function (a, b) { return a + b; }, 0);
+        split = med.map(function (m, jj) { return sm ? Math.floor(o.tokens * m / sm / o.packs[jj].price) : 0; });
+        // never simulate more 10-pulls than the slowest run needed: past that, every car is already at max
+        spend = o.packs.map(function (pk, jj) { var mx = Math.max.apply(null, res[jj].packs); return simSpend(pk, Math.min(split[jj], mx + 1), o); });
+      }
+      return { res: res, cost: cost, need: need, split: split, spend: spend };
+    }
+    return { run: run };
+  }
+  var LIB = SIMLIB(), worker = null, jobSeq = 0, jobCtx = {};
+  try {
+    var src = 'var L=(' + SIMLIB.toString() + ')();onmessage=function(e){postMessage({id:e.data.id,out:L.run(e.data.job)});};';
+    worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    worker.onmessage = function (e) { var ctx = jobCtx[e.data.id]; delete jobCtx[e.data.id]; if (e.data.id === jobSeq && ctx) render(e.data.out, ctx); };
+    worker.onerror = function () { worker = null; compute(); };
+  } catch (e) { worker = null; }
+
+  var sorted = function (a) { return a.slice().sort(function (x, y) { return x - y; }); };
+  var pq = function (s, f) { return s[Math.min(s.length - 1, Math.floor(f * s.length))]; };
+  var mean = function (a) { return a.reduce(function (x, y) { return x + y; }, 0) / a.length; };
+
+  // ---------- DOM ----------
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, attrs, kids) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k]; if (v == null || v === false) return;
+      if (k === 'text') e.textContent = v; else if (k === 'class') e.className = v;
+      else if (k.slice(0, 2) === 'on') e.addEventListener(k.slice(2), v); else e.setAttribute(k, v === true ? '' : v);
+    });
+    (kids || []).forEach(function (c) { if (c != null) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return e;
+  }
+  function seg(items, cur, pick, labelledBy) {
+    var host = el('div', { class: 'seg', role: 'group', 'aria-labelledby': labelledBy });
+    items.forEach(function (it) { host.appendChild(el('button', { type: 'button', 'aria-pressed': String(it.v === cur), text: it.label, onclick: function () { pick(it.v); } })); });
+    return host;
+  }
+
+  function packProgress(pi) { var h = 0, a = 0; PACKS[pi].cars.forEach(function (c, ci) { h += S.cars[pi][ci].cum; a += total(c); }); return [h, a]; }
+  function renderTabs() {
+    var host = $('tabs'); host.textContent = '';
+    var pis = packsInView(), names = pis.map(function (pi) { return PACKS[pi].name; });
+    var bp = pis.reduce(function (a, pi) { var p = packProgress(pi); return [a[0] + p[0], a[1] + p[1]]; }, [0, 0]);
+    host.appendChild(el('div', { class: 'tabs-head' }, [
+      el('span', { class: 'label', id: 'packsLbl', text: 'Which packs are you buying?' }),
+      el('span', { class: 'hint', text: 'Planning: ' + names.join(' + ') + ' · ' + fmt(bp[0]) + ' / ' + fmt(bp[1]) + ' BP' })
+    ]));
+    var grid = el('div', { class: 'tabs-grid', role: 'group', 'aria-labelledby': 'packsLbl' });
+    [0, 1, 2].forEach(function (v) {
+      var p = packProgress(v), on = S.sel[v];
+      grid.appendChild(el('button', { class: 'tab', type: 'button', 'aria-pressed': String(on), onclick: function () {
+        if (on && packsInView().length === 1) { toast('Pick at least one pack'); return; }
+        S.sel[v] = !on; setDirty(true); renderAll();
+      } }, [
+        el('span', { class: 't' }, [el('span', { class: 'ck', 'aria-hidden': 'true', text: on ? '✓' : '' }), PACKS[v].name === 'Bolide' ? 'Bolide' : PACKS[v].name]),
+        el('span', { class: 'c', text: v === 2 ? 'Bugatti Bolide' : PACKS[v].cars.map(function (c) { return c.short; }).join(' · ') }),
+        el('span', { class: 'pbar', 'aria-hidden': 'true' }, [el('i', { style: 'width:' + (p[0] / p[1] * 100).toFixed(1) + '%' })]),
+        el('span', { class: 'm', text: fmt(p[0]) + ' / ' + fmt(p[1]) + ' BP' })
+      ]));
+    });
+    host.appendChild(grid);
+    var quick = el('div', { class: 'quick' }, [el('span', { class: 'hint', text: 'Quick:' })]);
+    [['#1', 1], ['#2', 2], ['Both BOS', 3], ['Both + Bolide', 7], ['Bolide', 4]].forEach(function (q) {
+      quick.appendChild(el('button', { type: 'button', class: 'qbtn', 'aria-pressed': String(maskOf(S.sel) === q[1]), text: q[0], onclick: function () { S.sel = selOf(q[1]); setDirty(true); renderAll(); } }));
+    });
+    host.appendChild(quick);
+  }
+
+  function renderSettings() {
+    var host = $('settings'); host.textContent = '';
+    var groups = []; packsInView().forEach(function (pi) { var g = PACKS[pi].group; if (groups.indexOf(g) < 0) groups.push(g); });
+    groups.forEach(function (grp) {
+      var G = GROUPS[grp], g = S.cfg[grp], id = 'l-' + grp;
+      var box = el('div', { style: 'display:flex;flex-direction:column;gap:12px' });
+      box.appendChild(el('div', { class: 'set-title' }, [el('h2', { text: G.name }), el('span', { class: 'hint', text: G.hit + ' BP per card' })]));
+      var grid = el('div', { class: 'settings' });
+      grid.appendChild(el('div', { class: 'field' }, [el('span', { class: 'label', id: id + '-p', text: 'Price / 10-pull' }),
+        G.prices.length > 1 ? seg(G.prices.map(function (v) { return { v: v, label: fmt(v) }; }), g.price, function (v) { g.price = v; renderSettings(); changed(); }, id + '-p') : el('div', { class: 'fixed', text: fmt(G.prices[0]) + ' tokens' })]));
+      grid.appendChild(el('div', { class: 'field' }, [el('span', { class: 'label', id: id + '-r', text: 'Drop chance' }),
+        seg(G.rates.map(function (v) { return { v: v, label: Math.round(v * 100) + '%' }; }), g.rate, function (v) { g.rate = v; renderSettings(); changed(); }, id + '-r')]));
+      var sel = el('select', { 'aria-labelledby': id + '-x' });
+      X15.forEach(function (v, i) { sel.appendChild(el('option', { value: String(v), text: X15_LABEL[i], selected: v === g.x15 })); });
+      sel.addEventListener('change', function () { g.x15 = parseFloat(sel.value) || 0; renderSettings(); changed(); });
+      grid.appendChild(el('div', { class: 'field' }, [el('span', { class: 'label', id: id + '-x', text: '15-BP drops' }), sel]));
+      if (!G.guarFixed) grid.appendChild(el('div', { class: 'field' }, [el('span', { class: 'label', id: id + '-g', text: '10th pull guaranteed' }),
+        seg([{ v: true, label: 'Yes' }, { v: false, label: 'No' }], g.guar, function (v) { g.guar = v; renderSettings(); changed(); }, id + '-g')]));
+      box.appendChild(grid);
+      var h = hitsPer10(g);
+      box.appendChild(el('p', { class: 'hint', style: 'margin:0', text: 'Average ' + bpPer10(grp).toFixed(2) + ' BP per 10-pull (' + h.toFixed(2) + ' hits' + (g.guar ? '; the 10th is guaranteed' : '') + '). ' + (grp === 'bos' ? 'Drop chance and 15-BP rate are unconfirmed: check the pack’s info screen.' : 'Drop chance, guarantee and 15-BP rate are unconfirmed; 10% is the wiki’s figure for car-specific packs.') }));
+      host.appendChild(box);
+    });
+    var first = host.querySelector('.set-title'); if (first) { first.style.borderTop = '0'; first.style.paddingTop = '0'; }
+  }
+
+  function renderPatience() {
+    var p = S.patient, btn = $('patBtn');
+    $('patLbl').textContent = p ? 'Patient: +' + p + ' BP per BOS car' : 'I\u2019m patient';
+    btn.classList.toggle('on', p > 0);
+    var host = $('patSeg'); host.textContent = '';
+    host.appendChild(seg([{ v: 0, label: 'Not at all' }, { v: 3, label: 'A bit\n+3 BP' }, { v: 8, label: 'Very\n+8 BP' }], p, function (v) { S.patient = v; renderPatience(); syncAllCars(); changed(); }, 'patQ'));
+  }
+  function syncAllCars() { [].forEach.call(document.querySelectorAll('#cars .car'), function (c) { if (c._sync) c._sync(); }); }
+  $('patBtn').addEventListener('click', function () { var open = $('patPanel').hidden; $('patPanel').hidden = !open; $('patBtn').setAttribute('aria-expanded', String(open)); });
+  function renderCars() {
+    var host = $('cars'); host.textContent = '';
+    packsInView().forEach(function (pi) {
+      if (multi()) { var p = packProgress(pi); host.appendChild(el('div', { class: 'group-title' }, [el('h2', { text: PACKS[pi].name === 'Bolide' ? 'Bolide pack' : PACKS[pi].name }), el('span', { class: 'hint', text: fmt(p[0]) + ' / ' + fmt(p[1]) + ' BP' })])); }
+      PACKS[pi].cars.forEach(function (c, ci) { host.appendChild(carCard(c, S.cars[pi][ci], pi)); });
+    });
+    resyncCars();
+  }
+  function resyncCars() { requestAnimationFrame(function () { [].forEach.call(document.querySelectorAll('#cars .car'), function (c) { if (c._sync) c._sync('resync'); }); }); }
+  var rz = null; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(resyncCars, 150); });
+
+  function carCard(c, st, pi) {
+    var HIT = GROUPS[PACKS[pi].group].hit;
+    var T = total(c), card = el('section', { class: 'card car', 'aria-label': c.name });
+    card.appendChild(el('div', { class: 'car-head' }, [
+      el('div', { class: 'car-name' }, [el('span', { class: 'cls', text: c.cls }), el('b', { text: c.name })]),
+      el('span', { class: 'chip', text: isKey(c) ? 'Key car' : 'BP unlock' })
+    ]));
+    var ticks = el('div', { class: 'ticks', 'aria-hidden': 'true' });
+    var rail = el('div', { class: 'rail' });
+    var thumb = el('div', { class: 'thumb', role: 'slider', tabindex: '0', 'aria-label': c.name + ' blueprints collected', 'aria-valuemin': '0', 'aria-valuemax': String(T) });
+    var hint = el('span', { class: 'slide-hint', text: 'Drag the handle to change' });
+    var slider = el('div', { class: 'slider' }, [rail, thumb, hint]);
+    var maxBtn = el('button', { type: 'button', class: 'maxbox' }, [el('span', { text: 'MAX' }), el('small', { text: fmt(T) + ' BP' }), el('span', { class: 'sr', text: ' (set ' + c.name + ' to max)' })]);
+    card.appendChild(el('div', { class: 'track-row' }, [el('div', { class: 'track' }, [ticks, slider]), maxBtn]));
+
+    var sSel = el('select', { 'aria-label': c.name + ' current stars' });
+    for (var s = minStars(c); s < maxS(c); s++) sSel.appendChild(el('option', { value: String(s), text: starLabel(c, s) }));
+    sSel.appendChild(el('option', { value: String(maxS(c)), text: maxS(c) + '★ MAX' }));
+    var bpIn = el('input', { type: 'number', min: '0', inputmode: 'numeric', 'aria-label': c.name + ' blueprints toward next star' });
+    var minus = el('button', { type: 'button', 'aria-label': 'Minus 4 blueprints', text: '−' });
+    var plus = el('button', { type: 'button', 'aria-label': 'Plus 4 blueprints', text: '+' });
+    var bpLbl = el('span', { class: 'label' });
+    var goals = el('div', { class: 'goals', role: 'group', 'aria-label': c.name + ' goal' });
+    var status = el('div', { class: 'status' });
+    var wild = el('p', { class: 'wild' });
+    card.appendChild(el('div', { class: 'exact' }, [
+      el('label', { class: 'field' }, [el('span', { class: 'label', text: 'Stars' }), sSel]),
+      el('div', { class: 'field' }, [bpLbl, el('div', { class: 'step' }, [minus, bpIn, plus])]),
+      el('div', { class: 'field goalf' }, [el('span', { class: 'label', text: 'Goal' }), goals])
+    ]));
+    card.appendChild(status);
+    card.appendChild(wild);
+
+    function setCum(v, from) { st.cum = Math.max(0, Math.min(T, Math.round(v))); var s0 = starsOf(c, st.cum); if (st.goal < s0) st.goal = s0; sync(from); renderTabs(); changed(); }
+
+    function sync(from) {
+      var stars = starsOf(c, st.cum), extra = extraOf(c, st.cum), req = nextReq(c, stars), full = stars >= maxS(c);
+      var goal = Math.max(st.goal, stars, 1), gCum = cumAt(c, goal), pc = st.cum / T * 100, pg = Math.max(pc, gCum / T * 100);
+      thumb.style.left = 'calc(14px + (100% - 28px) * ' + (st.cum / T).toFixed(5) + ')';
+      thumb.setAttribute('aria-valuenow', String(st.cum));
+      thumb.setAttribute('aria-valuetext', full ? 'Maxed' : starLabel(c, stars) + ' plus ' + extra + ' of ' + req + ' blueprints');
+      rail.style.background = 'linear-gradient(90deg,var(--have) 0 ' + pc + '%,var(--need-soft) ' + pc + '% ' + pg + '%,#2A303B ' + pg + '% 100%)';
+      ticks.textContent = '';
+      if (isKey(c)) ticks.appendChild(el('div', { class: 'tick reached', style: 'left:0%' }, [el('span', { text: '1★' }), el('i')]));
+      // labels need ~26px; on narrow tracks drop a label (keep the tick) when it would collide, never the goal's
+      var rw = rail.getBoundingClientRect().width, w = rw > 40 ? rw : 300, minGap = 26 / w * 100, lastAt = isKey(c) ? 0 : -100;
+      for (var s2 = isKey(c) ? 2 : 1; s2 < maxS(c); s2++) {
+        var at = cumAt(c, s2) / T * 100, isGoal = s2 === goal && !full, show = isGoal || at - lastAt >= minGap;
+        if (show) lastAt = at;
+        ticks.appendChild(el('div', { class: 'tick' + (st.cum >= cumAt(c, s2) ? ' reached' : '') + (isGoal ? ' goal' : ''), style: 'left:' + at + '%', title: s2 + '★ at ' + cumAt(c, s2) + ' BP' }, [el('span', { text: show ? s2 + '★' : '' }), el('i')]));
+      }
+      maxBtn.setAttribute('aria-pressed', String(full));
+      maxBtn.classList.toggle('goal', !full && goal === maxS(c));
+      if (from !== 'sel') sSel.value = String(stars);
+      bpLbl.textContent = full ? 'Blueprints' : 'BP to ' + (stars + 1) + '★ (/' + req + ')';
+      // a phone keyboard opening fires resize: never overwrite the field the user is typing in
+      if (from !== 'bp' && !(from === 'resync' && document.activeElement === bpIn)) bpIn.value = full ? '' : String(extra);
+      bpIn.disabled = full; bpIn.placeholder = full ? 'MAX' : '0';
+      minus.disabled = st.cum <= 0; plus.disabled = full;
+      goals.textContent = '';
+      for (var g = 1; g <= maxS(c); g++) (function (g) {
+        goals.appendChild(el('button', { type: 'button', 'aria-pressed': String(g === goal), text: goalLabel(c, g), disabled: g < stars, onclick: function () { st.goal = g; sync(); changed(); } }));
+      })(g);
+      var need = Math.max(0, gCum - st.cum);
+      status.textContent = '';
+      status.appendChild(document.createTextNode('Have ')); status.appendChild(el('strong', { text: fmt(st.cum) })); status.appendChild(document.createTextNode(' / ' + fmt(T) + ' · '));
+      var fromEvent = Math.min(eventBP(pi), need);
+      if (need > fromEvent) { status.appendChild(document.createTextNode('need ')); status.appendChild(el('strong', { text: fmt(need - fromEvent) + ' BP' })); status.appendChild(document.createTextNode(' to ' + goalLabel(c, goal) + (fromEvent ? ' (+' + fromEvent + ' from event)' : ''))); }
+      else if (need > 0) status.appendChild(el('span', { class: 'ok', text: 'Event covers it' }));
+      else status.appendChild(el('span', { class: 'ok', text: full ? 'Maxed' : 'Goal reached' }));
+      // Wild Card tip: packs pay out in fixed steps (4 or 3 BP); if the gap isn't a multiple of that step, the last hit is partly wasted
+      var left = need - fromEvent, r = left % HIT;
+      wild.textContent = '';
+      if (left > 0 && r > 0 && stars >= 1) {
+        var hits = Math.ceil(left / HIT);
+        wild.appendChild(el('b', { text: 'Wild Card tip: ' }));
+        wild.appendChild(document.createTextNode('+' + r + ' BP → ' + (left - r) + ' = ' + (hits - 1) + ' × ' + HIT + ', one hit less (same class & star).'));
+      } else if (left > 0 && r === 0) wild.appendChild(document.createTextNode('Wild Cards: none needed (' + left + ' = ' + (left / HIT) + ' × ' + HIT + ').'));
+      wild.hidden = !wild.textContent;
+    }
+
+    // drag-only: taps and scroll gestures on the track never change the value
+    var dragging = false, hintT = null;
+    function valFromX(x) { var r = rail.getBoundingClientRect(); return (x - r.left) / Math.max(1, r.width) * T; }
+    thumb.addEventListener('pointerdown', function (e) { e.preventDefault(); dragging = true; DRAG = true; thumb.classList.add('drag'); try { thumb.setPointerCapture(e.pointerId); } catch (_) {} try { thumb.focus({ preventScroll: true }); } catch (_) {} });
+    thumb.addEventListener('pointermove', function (e) { if (dragging) setCum(valFromX(e.clientX)); });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (ev) { thumb.addEventListener(ev, function () { if (!dragging) return; dragging = false; DRAG = false; thumb.classList.remove('drag'); if (PENDING) changed(); }); });
+    slider.addEventListener('click', function (e) {
+      if (e.target === thumb) return;
+      hint.classList.add('on'); thumb.classList.remove('nudge'); void thumb.offsetWidth; thumb.classList.add('nudge');
+      clearTimeout(hintT); hintT = setTimeout(function () { hint.classList.remove('on'); }, 1400);
+    });
+    thumb.addEventListener('keydown', function (e) {
+      if (e.key === 'Home') { setCum(0); e.preventDefault(); return; }
+      if (e.key === 'End') { setCum(T); e.preventDefault(); return; }
+      var d = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 4, PageDown: -4 }[e.key];
+      if (d) { setCum(st.cum + d * (e.shiftKey ? 4 : 1)); e.preventDefault(); }
+    });
+    maxBtn.addEventListener('click', function () { setCum(T); });
+    sSel.addEventListener('change', function () { setCum(cumAt(c, +sSel.value), 'sel'); });
+    // typing the full requirement (or more) carries over into the next star, like starring up in-game
+    bpIn.addEventListener('input', function () {
+      if (bpIn.value === '') return;
+      var s0 = starsOf(c, st.cum), base = cumAt(c, s0), raw = Math.floor(Number(bpIn.value));
+      if (!isFinite(raw)) return;
+      var v = Math.max(0, Math.min(T - base, raw));
+      setCum(base + v, (raw < 0 || v >= nextReq(c, s0)) ? null : 'bp');
+    });
+    bpIn.addEventListener('blur', function () { sync(); });
+    minus.addEventListener('click', function () { setCum(st.cum - 4); });
+    plus.addEventListener('click', function () { setCum(st.cum + 4); });
+    sync();
+    card._sync = sync;
+    return card;
+  }
+
+  // ---------- compute ----------
+  var last = null;
+  function compute() {
+    var pis = packsInView(), ctx = { pis: pis, tokens: S.tokens, prices: pis.map(function (pi) { return cfgOf(pi).price; }) };
+    var job = { RUNS: RUNS, SPEND_RUNS: SPEND_RUNS, CAP: CAP, PULLS: PULLS, tokens: S.tokens,
+      packs: pis.map(function (pi) {
+        var cars = PACKS[pi].cars, st = S.cars[pi], g = cfgOf(pi);
+        return { pi: pi, price: g.price, rate: g.rate, x15: g.x15, guar: g.guar, hit: GROUPS[PACKS[pi].group].hit,
+          start: cars.map(function (c, i) { return eventStart(c, st[i], pi); }), max: cars.map(total),
+          goal: cars.map(function (c, i) { return Math.max(eventStart(c, st[i], pi), cumAt(c, Math.max(1, st[i].goal))); }),
+          goalUser: cars.map(function (c, i) { return cumAt(c, Math.max(1, st[i].goal)); }) };
+      }) };
+    $('codeOut').textContent = encodeCode(); // the code reflects the state right away, not when the simulation returns
+    $('result').classList.add('stale'); $('result').setAttribute('aria-busy', 'true'); // every recalculation, including tab switches, shows as pending
+    var id = ++jobSeq;
+    if (worker) { jobCtx[id] = ctx; worker.postMessage({ id: id, job: job }); }
+    else render(LIB.run(job), ctx);
+  }
+
+  function pctLabel(okN) { if (okN === RUNS) return '100%'; if (okN === 0) return '0%'; var v = okN / RUNS * 100; return v > 99 ? '>99%' : v < 1 ? '<1%' : Math.round(v) + '%'; }
+  function tenPullsLabel(res, f) {
+    // per pack: 10-pulls at that percentile, e.g. "78 × 10-pull" or "P1 37 · P2 41 · Bolide 30"
+    var parts = res.map(function (r, j) { return { n: pq(sorted(r.packs), f), j: j }; }).filter(function (x) { return x.n > 0; });
+    if (last && last.pis.length === 1) return parts.length ? parts[0].n + ' × 10-pull' : '';
+    return parts.map(function (x) { return shortPack(last.pis[x.j]) + ' ' + x.n; }).join(' · ') + ' × 10';
+  }
+  function shortPack(pi) { return pi === 2 ? 'Bolide' : 'P' + (pi + 1); }
+
+  function render(out, ctx) {
+    var pis = ctx.pis, res = out.res, cost = out.cost, need = out.need, i;
+    var sp = sorted(cost), c50 = pq(sp, .5), c90 = pq(sp, .9), ok = 0;
+    for (i = 0; i < RUNS; i++) if (cost[i] <= ctx.tokens) ok++;
+    var ch = Math.round(ok / RUNS * 100);
+    var minPrice = Math.min.apply(null, ctx.prices);
+    last = { chLabel: pctLabel(ok), pis: pis, res: res, cost: cost, need: need, c50: c50, c90: c90, ch: ch, tokens: ctx.tokens, prices: ctx.prices, split: out.split, spend: out.spend };
+    $('result').classList.remove('stale'); $('result').removeAttribute('aria-busy');
+
+    if (!need) {
+      hero('0', 'all goals reached', '0', '—');
+      setChance(100, 'var(--good)', 'Every car is at its goal.');
+      $('hist').textContent = ''; $('hMin').textContent = ''; $('hMax').textContent = '';
+      dock('0', '0', '100%');
+    } else {
+      hero(fmt(c50), tenPullsLabel(res, .5), fmt(c90), pis.length > 1 ? '9 in 10 runs cost less' : tenPullsLabel(res, .9));
+      if (ctx.tokens > 0) {
+        var col = ch >= 90 ? 'var(--good)' : ch >= 60 ? 'var(--warn)' : ch >= 30 ? 'var(--need)' : 'var(--bad)';
+        setChance(ch, col, ctx.tokens < minPrice ? 'Less than one 10-pull (' + fmt(minPrice) + ' tokens).' : ch >= 90 ? 'Safe. You will very likely have tokens left.' : ch >= 60 ? 'Likely, but a bad streak can leave you short.' : ch >= 30 ? 'Coin flip. Is the goal worth the risk?' : ch > 0 ? 'Unlikely. Lower a goal or save more.' : 'Not enough: even the luckiest of 6,000 runs needs ' + fmt(sp[0]) + ' tokens.', pctLabel(ok));
+        $('chanceLbl').textContent = 'Chance with ' + fmt(ctx.tokens) + ' tokens';
+      } else {
+        $('chance').textContent = '–'; $('chance').style.color = ''; meter(0); $('chanceLbl').textContent = 'Chance to reach all goals';
+        $('chanceText').textContent = 'Enter your tokens to see your odds.'; $('meterWrap').setAttribute('aria-label', 'No tokens entered');
+      }
+      histogram(sp, ctx.tokens);
+      dock(fmt(c50), fmt(c90), ctx.tokens > 0 ? pctLabel(ok) : '–');
+    }
+    $('heroTitle').textContent = multi() ? 'Typical · ' + pis.length + ' packs' : 'Typical';
+    $('histCap').textContent = 'Tokens needed · 6,000 simulated runs';
+    perCarTable();
+    if ($('mathBox').open) renderMath();
+  }
+
+  function histogram(sp, tokens) {
+    // costs are multiples of the pack prices: bin widths snap to their common step so the chart has no comb pattern
+    var unit = last.prices.reduce(function (a, b) { while (b) { var t = b; b = a % b; a = t; } return a; });
+    var lo = sp[0], hi = sp[sp.length - 1], BINS = 28, w = unit * Math.max(1, Math.ceil((hi - lo + unit) / unit / BINS)), bins = Math.ceil((hi - lo + 1) / w), cnt = new Array(bins).fill(0);
+    last.cost.forEach(function (v) { cnt[Math.min(bins - 1, Math.floor((v - lo) / w))]++; });
+    var cm = Math.max.apply(null, cnt), h = $('hist'); h.textContent = '';
+    cnt.forEach(function (v, b) { var up = lo + (b + 1) * w - 1; h.appendChild(el('i', { style: 'height:' + Math.max(2, Math.round(v / cm * 86)) + 'px;background:' + (tokens > 0 && up <= tokens ? 'var(--need)' : 'var(--bar-off)') })); });
+    $('hMin').textContent = fmt(lo); $('hMax').textContent = fmt(hi);
+  }
+
+  function perCarTable() {
+    var tb = $('perCar'), L = last; tb.textContent = '';
+    L.pis.forEach(function (pi, j) {
+      if (L.pis.length > 1) tb.appendChild(el('tr', { class: 'grp' }, [el('td', { colspan: '4', text: (pi === 2 ? 'Bolide pack' : PACKS[pi].name) + (L.split ? ' · ' + L.split[j] + '×10 of your tokens' : '') })]));
+      PACKS[pi].cars.forEach(function (c, ci) {
+        var r = L.res[j], s = r.need[ci] ? sorted(r.per[ci]) : null, likely = '–';
+        if (L.spend) { var f = sorted(L.spend[j].fin[ci]); likely = stateLabel(c, pq(f, .5)) + ' · ' + Math.round(L.spend[j].hit[ci] / SPEND_RUNS * 100) + '%'; }
+        tb.appendChild(el('tr', null, [
+          el('td', { text: c.short }),
+          el('td', { class: 'num', text: r.need[ci] ? fmt(r.need[ci]) : '–' }),
+          el('td', { class: 'num', text: s ? pq(s, .5) + ' / ' + pq(s, .9) : 'done' }),
+          el('td', { class: 'num', text: likely })
+        ]));
+      });
+    });
+    $('perCarHint').textContent = '"Done by": 10-pulls in that pack, typical / safe.' + (L.spend ? ' "If you spend": where the car likely ends after spending your tokens, and its chance to reach the goal.' + (L.pis.length > 1 ? ' Tokens are split between the packs in proportion to what each typically costs.' : '') : '');
+  }
+
+  function renderMath() {
+    var L = last, m = $('math'); m.textContent = '';
+    function block(title, lines) { m.appendChild(el('h2', { class: 'mh', text: title })); var e = el('div', { class: 'eq' }); lines.forEach(function (ln, i) { if (i) e.appendChild(document.createTextNode('\n')); ln.forEach(function (part) { e.appendChild(typeof part === 'string' ? document.createTextNode(part) : el('b', { text: part.b })); }); }); m.appendChild(e); }
+    var n = 1, seen = [];
+    L.pis.forEach(function (pi) {
+      var grp = PACKS[pi].group; if (seen.indexOf(grp) >= 0) return; seen.push(grp);
+      var g = S.cfg[grp], G = GROUPS[grp], h = hitsPer10(g), perHit = G.hit + (15 - G.hit) * g.x15;
+      block((n++) + ' · One 10-pull, ' + G.name, [
+        ['hits = 9 × ' + g.rate.toFixed(2) + (g.guar ? ' + 1 (sure 10th)' : ' + ' + g.rate.toFixed(2)) + ' = ', { b: h.toFixed(2) }],
+        ['BP per hit = ' + G.hit + (g.x15 ? ' + ' + (15 - G.hit) + ' × ' + g.x15 + ' (15-BP drops)' : '') + ' = ', { b: perHit.toFixed(3) }],
+        ['average BP per 10-pull = ' + h.toFixed(2) + ' × ' + perHit.toFixed(3) + ' = ', { b: bpPer10(grp).toFixed(2) }],
+        ['cost per 10-pull = ', { b: fmt(g.price) + ' tokens' }]
+      ]);
+    });
+    if (S.patient && L.pis.some(function (pi) { return PACKS[pi].group === 'bos'; })) block((n++) + ' · Patience', [['free blueprints from the Bolide special event = ', { b: '+' + S.patient + ' per Burst of Speed car' }, ' (not the Bolide), counted before any pack']]);
+    L.pis.forEach(function (pi, j) {
+      var r = L.res[j], nd = r.need.reduce(function (a, b) { return a + b; }, 0), s = sorted(r.packs), grp = PACKS[pi].group, price = S.cfg[grp].price, bp = bpPer10(grp);
+      var lines = PACKS[pi].cars.map(function (c, ci) { return [c.short + ': ' + stateLabel(c, S.cars[pi][ci].cum) + ' → ' + goalLabel(c, Math.max(S.cars[pi][ci].goal, 1)) + ' = ' + r.need[ci] + ' BP']; });
+      lines.push(['need = ', { b: fmt(nd) + ' BP' }]);
+      if (nd) {
+        var flat = Math.ceil(nd / bp);
+        lines.push(['flat estimate = ⌈' + nd + ' ÷ ' + bp.toFixed(2) + '⌉ = ' + flat + ' × 10-pull = ' + fmt(flat * price) + ' tokens']);
+        lines.push(['simulated: typical ', { b: pq(s, .5) + '' }, ' · average ' + mean(r.packs).toFixed(1) + ' · safe ', { b: pq(s, .9) + '' }, ' × 10-pull']);
+      }
+      block((n++) + ' · ' + (pi === 2 ? 'Bolide pack' : PACKS[pi].name), lines);
+    });
+    if (L.need) {
+      var lines = [];
+      if (L.pis.length > 1) lines.push(['all packs = each run adds up the tokens of every pack']);
+      lines.push(['typical = ', { b: fmt(L.c50) + ' tokens' }, ' (half of 6,000 runs cost less)']);
+      lines.push(['safe = ', { b: fmt(L.c90) + ' tokens' }, ' (9 in 10 runs cost less)']);
+      if (L.tokens > 0) lines.push(['chance = runs costing ≤ ' + fmt(L.tokens) + ' ÷ 6,000 = ', { b: L.chLabel }]);
+      block(n + ' · Result', lines);
+    }
+    m.appendChild(el('p', { class: 'hint', style: 'margin:0', text: 'Why simulate: the flat estimate is an average. It ignores bad streaks, hits lost on a car that maxes in the middle of a 10-pull, and hits that go to a car already past its goal (it stays in the pool until it is maxed). The simulation plays your whole plan 6,000 times.' }));
+  }
+  $('mathBox').addEventListener('toggle', function () { if ($('mathBox').open && last) renderMath(); });
+
+  function hero(a, as, b, bs) { $('p50').textContent = a; $('p50s').textContent = 'tokens' + (as ? ' · ' + as : ''); $('p90').textContent = b; $('p90s').textContent = 'tokens' + (bs ? ' · ' + bs : ''); }
+  function meter(v, col) { var mm = $('meter'); mm.style.width = v + '%'; mm.style.background = col || 'var(--good)'; }
+  function setChance(v, col, txt, label) { $('chance').textContent = label || (v + '%'); $('chance').style.color = col; meter(v, col); $('chanceText').textContent = txt; $('meterWrap').setAttribute('aria-label', 'Chance ' + v + ' percent'); }
+  function dock(a, b, c) { $('dP50').textContent = a; $('dP90').textContent = b; $('dCh').textContent = c; }
+
+  // ---------- backup code ----------
+  // v2: 32 digits = 30-digit mixed-radix number + 2 check digits (mod 97). v1 (28 digits, BOS packs only) still loads.
+  var HAS_BIGINT = typeof BigInt === 'function';
+  var B = HAS_BIGINT ? BigInt : null;
+  var V1 = { cars: [[300, 300, 265], [300, 300, 270]] };
+  function radicesV3() { var r = [7, 2, 2, 4, 3, 4, 2, 2000, 3]; PACKS.forEach(function (p) { p.cars.forEach(function (c) { r.push(total(c) + 1, 6); }); }); return r; }
+  function radicesV1() { var r = [3, 2, 2, 4, 4000]; V1.cars.forEach(function (g) { g.forEach(function (t) { r.push(t + 1, 6); }); }); return r; }
+  function digitsV3() {
+    var b = S.cfg.bos, l = S.cfg.bol;
+    var v = [maskOf(S.sel) - 1, b.price === 900 ? 1 : 0, b.rate === 0.15 ? 1 : 0, Math.max(0, X15.indexOf(b.x15)), GROUPS.bol.rates.indexOf(l.rate), Math.max(0, X15.indexOf(l.x15)), l.guar ? 0 : 1, Math.min(1999, Math.round(S.tokens / 500)), Math.max(0, PATIENCE.indexOf(S.patient))];
+    PACKS.forEach(function (p, pi) { p.cars.forEach(function (c, ci) { var st = S.cars[pi][ci]; v.push(st.cum, Math.max(1, Math.min(6, st.goal)) - 1); }); });
+    return v;
+  }
+  function packNumber(rad, v) { var n = B(0); for (var i = 0; i < rad.length; i++) n = n * B(rad[i]) + B(v[i]); return n; }
+  function unpack(n, rad) { var v = new Array(rad.length); for (var i = rad.length - 1; i >= 0; i--) { var r = B(rad[i]); v[i] = Number(n % r); n = n / r; } return n === B(0) ? v : null; }
+  // v3 codes are made so the whole number ≡ 2 (mod 97); v1/v2 codes ≡ 1. A typo fails both.
+  function withCheck(body) { return body + String((B(99) - (B(body) * B(100)) % B(97)) % B(97)).padStart(2, '0'); }
+  function codeDigits() { return withCheck(packNumber(radicesV3(), digitsV3()).toString().padStart(30, '0')); }
+  function encodeCode() { return HAS_BIGINT ? codeDigits().replace(/(\d{4})(?=\d)/g, '$1 ') : 'Not available in this browser'; }
+  function decodeCode(str) {
+    if (!HAS_BIGINT) return null;
+    var d = String(str).replace(/\D/g, '');
+    if (d.length !== 32 && d.length !== 28) return null;
+    // 28-digit (v1) codes check to 1, 32-digit codes to 2: a typo can't turn one valid code into another
+    var chk = Number(B(d) % B(97)); if (chk !== (d.length === 28 ? 1 : 2)) return null;
+    var cfg = freshCfg(), o = { cfg: cfg, cars: [] }, v, k;
+    if (d.length === 28) {
+      if (d[0] !== '1') return null;
+      v = unpack(B(d.slice(1, 26)), radicesV1()); if (!v || v[0] > 2) return null;
+      o.sel = selOf([1, 2, 3][v[0]]); cfg.bos.price = v[1] ? 900 : 750; cfg.bos.rate = v[2] ? 0.15 : 0.20; cfg.bos.x15 = X15[v[3]]; o.tokens = v[4] * 250; k = 5;
+      for (var g = 0; g < 2; g++) o.cars.push([0, 1, 2].map(function () { var x = { cum: v[k], goal: v[k + 1] + 1 }; k += 2; return x; }));
+      o.cars.push([{ cum: 0, goal: 6 }]);
+      return o;
+    }
+    v = unpack(B(d.slice(0, 30)), radicesV3()); if (!v) return null;
+    o.sel = selOf(v[0] + 1); cfg.bos.price = v[1] ? 900 : 750; cfg.bos.rate = v[2] ? 0.15 : 0.20; cfg.bos.x15 = X15[v[3]];
+    cfg.bol.rate = GROUPS.bol.rates[v[4]]; cfg.bol.x15 = X15[v[5]]; cfg.bol.guar = !v[6]; o.tokens = v[7] * 500; o.patient = PATIENCE[v[8]]; k = 9;
+    PACKS.forEach(function (p) { o.cars.push(p.cars.map(function () { var x = { cum: v[k], goal: v[k + 1] + 1 }; k += 2; return x; })); });
+    return o;
+  }
+
+  // ---------- state load / save (this browser only) ----------
+  var KEY = 'bosPlanner.bf2026.v1', dirty = false, savedAt = null;
+  var MAX_TOKENS = 9999999;
+  function readTokens(v) { var n = Number(String(v).replace(/[\s,]/g, '')); return isFinite(n) ? Math.max(0, Math.min(MAX_TOKENS, Math.floor(n))) : 0; }
+  function pick(v, list, dflt) { return list.indexOf(v) >= 0 ? v : dflt; }
+  function apply(o) {
+    if (!o || !Array.isArray(o.cars)) return false;
+    var d = freshCfg(), c = o.cfg || {};
+    // older saves kept the BOS settings at the top level
+    var bos = c.bos || { price: o.price, rate: o.rate, x15: o.x15 }, bol = c.bol || {};
+    S.cfg = {
+      bos: { price: pick(bos.price, GROUPS.bos.prices, 750), rate: pick(bos.rate, GROUPS.bos.rates, 0.20), x15: pick(bos.x15, X15, 0), guar: true },
+      bol: { price: 900, rate: pick(bol.rate, GROUPS.bol.rates, d.bol.rate), x15: pick(bol.x15, X15, 0), guar: bol.guar !== false }
+    };
+    if (Array.isArray(o.sel) && o.sel.some(Boolean)) S.sel = [0, 1, 2].map(function (i) { return !!o.sel[i]; });
+    else if (o.view === 2 && !c.bos) S.sel = selOf(3); // oldest saves: view 2 meant both BOS packs
+    else S.sel = selOf(MASK_OF_VIEW[pick(o.view, [0, 1, 2, 3], 0)]);
+    S.tokens = readTokens(o.tokens || 0);
+    S.patient = pick(o.patient, PATIENCE, 0);
+    S.cars = PACKS.map(function (p, pi) {
+      return p.cars.map(function (car, ci) {
+        var x = (o.cars[pi] || [])[ci] || {}, cum = Math.max(0, Math.min(total(car), parseInt(x.cum, 10) || 0));
+        var goal = Math.max(1, Math.min(maxS(car), parseInt(x.goal, 10) || maxS(car)));
+        return { cum: cum, goal: Math.max(goal, starsOf(car, cum)) };
+      });
+    });
+    return true;
+  }
+  function store(fn) { try { return fn(window.localStorage); } catch (e) { return undefined; } }
+  function when(t) { var d = new Date(t); return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }); }
+  function setDirty(v) {
+    dirty = v;
+    ['saveBtn', 'dockSave'].forEach(function (id) { $(id).classList.toggle('dirty', v); });
+    $('dockSave').setAttribute('aria-label', v ? 'Save' : 'Saved');
+    $('saveLbl').textContent = v ? (savedAt ? 'Save changes' : 'Save') : 'Saved';
+    $('saveState').textContent = v ? (savedAt ? 'Unsaved changes · last saved ' + when(savedAt) : 'Not saved yet') : 'Saved ' + when(savedAt) + ' in this browser';
+  }
+  function save() {
+    var snap = { sel: S.sel, tokens: S.tokens, patient: S.patient, cfg: S.cfg, cars: S.cars, at: Date.now() };
+    if (store(function (ls) { ls.setItem(KEY, JSON.stringify(snap)); return true; })) { savedAt = snap.at; setDirty(false); toast('Saved'); }
+    else toast('This browser blocks saving here. Use the backup code or a share link instead.');
+  }
+
+  // ---------- share link ----------
+  // ?code=… works wherever the page is hosted; #code-… is used too because some hosts only keep the hash.
+  function codeFromUrl() {
+    try {
+      var q = new URLSearchParams(location.search).get('code');
+      if (q) return q;
+      var m = /^#code-(\d{28,32})$/.exec(location.hash);
+      return m ? m[1] : null;
+    } catch (e) { return null; }
+  }
+  function shareLink() {
+    var d = codeDigits(), base = location.href.split('#')[0].split('?')[0];
+    try { history.replaceState(null, '', '#code-' + d); } catch (e) { try { location.hash = 'code-' + d; } catch (_) {} }
+    return base + '?code=' + d;
+  }
+
+  // ---------- events ----------
+  var tmr = null, DRAG = false, PENDING = false;
+  // while a handle is being dragged only the car card updates; the simulation runs once on release
+  function clearLinkCode() { if (/^#code-/.test(location.hash) || /[?&]code=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e) {} } }
+  function changed() {
+    clearLinkCode(); setDirty(true); $('result').classList.add('stale');
+    if (DRAG) { PENDING = true; return; }
+    PENDING = false; $('result').setAttribute('aria-busy', 'true'); clearTimeout(tmr); tmr = setTimeout(compute, 90);
+  }
+  function renderAll() { renderPatience(); renderTabs(); renderSettings(); renderCars(); compute(); }
+
+  $('tokens').addEventListener('input', function () { S.tokens = readTokens($('tokens').value); changed(); });
+  $('tokens').addEventListener('blur', function () { var v = $('tokens').value; if (v !== '' && String(S.tokens) !== v) $('tokens').value = S.tokens || ''; });
+  $('saveBtn').addEventListener('click', save);
+  $('dockSave').addEventListener('click', save);
+  $('resetBtn').addEventListener('click', function () {
+    packsInView().forEach(function (pi) { S.cars[pi] = fresh(PACKS[pi]); });
+    renderAll(); setDirty(true); toast(packsInView().map(function (pi) { return PACKS[pi].name; }).join(' + ') + ' reset');
+  });
+  $('copyBtn').addEventListener('click', function () { copy(resultText(), 'Result copied. Paste it in Discord or Reddit.'); });
+  $('shareBtn').addEventListener('click', function () {
+    if (!HAS_BIGINT) { toast('Share links aren’t available in this browser.'); return; }
+    copy(shareLink(), 'Link copied. Anyone who opens it sees this garage.');
+  });
+  $('codeCopy').addEventListener('click', function () { copy(encodeCode(), 'Code copied'); });
+  $('clearSave').addEventListener('click', function () { store(function (ls) { ls.removeItem(KEY); }); savedAt = null; setDirty(true); toast('Saved data deleted'); });
+  $('codeLoad').addEventListener('click', function () {
+    var o = decodeCode($('codeIn').value);
+    if (o && apply(o)) { $('tokens').value = S.tokens || ''; renderAll(); setDirty(true); $('codeIn').value = ''; toast('Code loaded. Tap Save to keep it here.'); }
+    else toast('That code isn’t valid. Check the digits.');
+  });
+  $('codeIn').addEventListener('input', function () {
+    var d = $('codeIn').value.replace(/\D/g, '').slice(0, 32), f = d.replace(/(\d{4})(?=\d)/g, '$1 ');
+    if (f !== $('codeIn').value) $('codeIn').value = f;
+  });
+  document.addEventListener('wheel', function (e) { var a = document.activeElement; if (a && a.type === 'number' && e.target === a) a.blur(); }, { passive: true });
+  window.addEventListener('beforeunload', function (e) { if (dirty && savedAt) { e.preventDefault(); e.returnValue = ''; } });
+
+  function resultText() {
+    var L = last; if (!L) return '';
+    var groups = []; L.pis.forEach(function (pi) { var g = PACKS[pi].group; if (groups.indexOf(g) < 0) groups.push(g); });
+    var head = groups.map(function (grp) { var g = S.cfg[grp]; return (grp === 'bos' ? 'BOS ' : 'Bolide ') + fmt(g.price) + '/10-pull · ' + Math.round(g.rate * 100) + '% drop' + (g.x15 ? ' · 15-BP ' + (g.x15 * 100).toFixed(1) + '%' : ''); }).join(' | ');
+    var cars = L.pis.map(function (pi, j) { return PACKS[pi].cars.map(function (c, ci) { return '• ' + c.short + ': ' + stateLabel(c, S.cars[pi][ci].cum) + ' → ' + goalLabel(c, Math.max(S.cars[pi][ci].goal, 1)) + ' (' + L.res[j].need[ci] + ' BP)'; }).join('\n'); }).join('\n');
+    return head + (S.patient ? ' | patient: +' + S.patient + ' BP per BOS car from the Bolide event' : '') + '\n' + cars + '\nTypical ' + fmt(L.c50) + ' tokens · Safe ' + fmt(L.c90) + (L.tokens > 0 ? '\nWith ' + fmt(L.tokens) + ' tokens: ' + L.chLabel + ' chance' : '');
+  }
+  function copy(t, msg) {
+    var ok = function () { toast(msg); };
+    var fb = function () { try { var a = document.createElement('textarea'); a.value = t; a.setAttribute('readonly', ''); a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); var r = document.execCommand('copy'); a.remove(); r ? ok() : toast('Copy blocked. Select the text and copy it manually.'); } catch (e) { toast('Copy blocked. Select the text and copy it manually.'); } };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, fb); else fb();
+  }
+  var tt = null;
+  function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(function () { t.classList.remove('on'); }, 2600); }
+
+  // ---------- boot: a shared link wins over saved data (without overwriting it until Save) ----------
+  var saved = store(function (ls) { return JSON.parse(ls.getItem(KEY) || 'null'); });
+  if (saved && apply(saved)) savedAt = saved.at || Date.now();
+  var fromLink = codeFromUrl(), linkState = fromLink ? decodeCode(fromLink) : null;
+  if (linkState) { apply(linkState); clearLinkCode(); }
+  $('tokens').value = S.tokens || '';
+  renderAll();
+  setDirty(linkState ? true : !savedAt);
+  if (linkState) toast('Loaded a shared garage. Tap Save to keep it here.');
+  else if (fromLink) toast('That link’s code isn’t valid.');
+  else if (savedAt) toast('Loaded your garage from ' + when(savedAt));
+})();
+</script>
+</body>
+</html>
