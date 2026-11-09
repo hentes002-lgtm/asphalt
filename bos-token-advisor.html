@@ -206,7 +206,12 @@
   <div class="card patpanel" id="patPanel" hidden>
     <p style="margin:0;font-weight:700" id="patQ">How patient are you?</p>
     <div id="patSeg"></div>
-    <p class="hint" style="margin:0">If you play the Bolide special event, you also earn free blueprints for the Burst of Speed cars (not for the Bolide itself). Pick how many you expect per car: they are counted before any pack is bought, so you need fewer packs.</p>
+    <p class="hint" style="margin:0">Playing the Bolide special event earns free blueprints. Pick how many you expect per Burst of Speed car. +3 and +8 come from past events and aren&rsquo;t confirmed for this one.</p>
+    <label class="field" style="max-width:340px">
+      <span class="label">Free Bolide blueprints from the event</span>
+      <input id="bolEv" type="number" min="0" max="300" step="1" inputmode="numeric" placeholder="0 (unknown yet)">
+    </label>
+    <p class="hint" style="margin:0">The event also gives Bolide blueprints, amount not announced yet. Past special events gave a fair amount (players recall about 70 in the Mosler Super GT event). Enter your own estimate; all of these are counted before any pack is bought. Your Bolide estimate stays in this browser (it isn’t part of codes or share links).</p>
   </div>
 </section>
 <nav class="tabs" aria-label="Packs" id="tabs"></nav>
@@ -375,11 +380,11 @@
   function fresh(p) { return p.cars.map(function (c) { return { cum: 0, goal: maxS(c) }; }); }
   function freshCfg() { return { bos: { price: 750, rate: 0.20, x15: 0, guar: true }, bol: { price: 900, rate: 0.10, x15: 0, guar: true } }; }
   var PATIENCE = [0, 3, 8]; // free blueprints per car expected from the Bolide special event
-  var S = { sel: [true, false, false], tokens: 0, patient: 0, cfg: freshCfg(), cars: PACKS.map(fresh) };
+  var S = { sel: [true, false, false], tokens: 0, patient: 0, bolEvent: 0, cfg: freshCfg(), cars: PACKS.map(fresh) };
   var maskOf = function (sel) { return (sel[0] ? 1 : 0) | (sel[1] ? 2 : 0) | (sel[2] ? 4 : 0); };
   var selOf = function (m) { return [!!(m & 1), !!(m & 2), !!(m & 4)]; };
-  // patience = free blueprints from the Bolide special event for the Burst of Speed cars (never for the Bolide itself)
-  var eventBP = function (pi) { return PACKS[pi].group === 'bos' ? S.patient : 0; };
+  // free blueprints expected from the Bolide special event: S.patient per BOS car, S.bolEvent for the Bolide (both the user's estimate)
+  var eventBP = function (pi) { return PACKS[pi].group === 'bos' ? S.patient : S.bolEvent; };
   function eventStart(c, st, pi) { return Math.min(total(c), st.cum + eventBP(pi)); }
   var packsInView = function () { return [0, 1, 2].filter(function (i) { return S.sel[i]; }); };
   var multi = function () { return packsInView().length > 1; };
@@ -530,12 +535,16 @@
 
   function renderPatience() {
     var p = S.patient, btn = $('patBtn');
-    $('patLbl').textContent = p ? 'Patient: +' + p + ' BP per BOS car' : 'I\u2019m patient';
-    btn.classList.toggle('on', p > 0);
+    var parts = []; if (p) parts.push('+' + p + ' BP per BOS car'); if (S.bolEvent) parts.push('Bolide +' + S.bolEvent);
+    $('patLbl').textContent = parts.length ? 'Patient: ' + parts.join(' · ') : 'I\u2019m patient';
+    btn.classList.toggle('on', parts.length > 0);
+    if (document.activeElement !== $('bolEv')) $('bolEv').value = S.bolEvent || '';
     var host = $('patSeg'); host.textContent = '';
     host.appendChild(seg([{ v: 0, label: 'Not at all' }, { v: 3, label: 'A bit\n+3 BP' }, { v: 8, label: 'Very\n+8 BP' }], p, function (v) { S.patient = v; renderPatience(); syncAllCars(); changed(); }, 'patQ'));
   }
   function syncAllCars() { [].forEach.call(document.querySelectorAll('#cars .car'), function (c) { if (c._sync) c._sync(); }); }
+  $('bolEv').addEventListener('input', function () { var n = Math.floor(Number($('bolEv').value)); S.bolEvent = isFinite(n) ? Math.max(0, Math.min(300, n)) : 0; renderPatience(); syncAllCars(); changed(); });
+  $('bolEv').addEventListener('blur', function () { $('bolEv').value = S.bolEvent || ''; });
   $('patBtn').addEventListener('click', function () { var open = $('patPanel').hidden; $('patPanel').hidden = !open; $('patBtn').setAttribute('aria-expanded', String(open)); });
   function renderCars() {
     var host = $('cars'); host.textContent = '';
@@ -768,7 +777,10 @@
         ['cost per 10-pull = ', { b: fmt(g.price) + ' tokens' }]
       ]);
     });
-    if (S.patient && L.pis.some(function (pi) { return PACKS[pi].group === 'bos'; })) block((n++) + ' · Patience', [['free blueprints from the Bolide special event = ', { b: '+' + S.patient + ' per Burst of Speed car' }, ' (not the Bolide), counted before any pack']]);
+    var evLines = [];
+    if (S.patient && L.pis.some(function (pi) { return PACKS[pi].group === 'bos'; })) evLines.push(['Burst of Speed cars: ', { b: '+' + S.patient + ' BP each' }]);
+    if (S.bolEvent && L.pis.indexOf(2) >= 0) evLines.push(['Bolide: ', { b: '+' + S.bolEvent + ' BP' }]);
+    if (evLines.length) { evLines.push(['your estimate of free blueprints from the Bolide special event, counted before any pack']); block((n++) + ' · Event blueprints', evLines); }
     L.pis.forEach(function (pi, j) {
       var r = L.res[j], nd = r.need.reduce(function (a, b) { return a + b; }, 0), s = sorted(r.packs), grp = PACKS[pi].group, price = S.cfg[grp].price, bp = bpPer10(grp);
       var lines = PACKS[pi].cars.map(function (c, ci) { return [c.short + ': ' + stateLabel(c, S.cars[pi][ci].cum) + ' → ' + goalLabel(c, Math.max(S.cars[pi][ci].goal, 1)) + ' = ' + r.need[ci] + ' BP']; });
@@ -803,25 +815,26 @@
   var B = HAS_BIGINT ? BigInt : null;
   var V1 = { cars: [[300, 300, 265], [300, 300, 270]] };
   function radicesV3() { var r = [7, 2, 2, 4, 3, 4, 2, 2000, 3]; PACKS.forEach(function (p) { p.cars.forEach(function (c) { r.push(total(c) + 1, 6); }); }); return r; }
+  function radicesV4() { var r = [7, 2, 2, 4, 3, 4, 2, 2000, 3, 301]; PACKS.forEach(function (p) { p.cars.forEach(function (c) { r.push(total(c) + 1, 6); }); }); return r; }
   function radicesV1() { var r = [3, 2, 2, 4, 4000]; V1.cars.forEach(function (g) { g.forEach(function (t) { r.push(t + 1, 6); }); }); return r; }
-  function digitsV3() {
+  function digitsV4() {
     var b = S.cfg.bos, l = S.cfg.bol;
-    var v = [maskOf(S.sel) - 1, b.price === 900 ? 1 : 0, b.rate === 0.15 ? 1 : 0, Math.max(0, X15.indexOf(b.x15)), GROUPS.bol.rates.indexOf(l.rate), Math.max(0, X15.indexOf(l.x15)), 0, Math.min(1999, Math.round(S.tokens / 500)), Math.max(0, PATIENCE.indexOf(S.patient))];
+    var v = [maskOf(S.sel) - 1, b.price === 900 ? 1 : 0, b.rate === 0.15 ? 1 : 0, Math.max(0, X15.indexOf(b.x15)), GROUPS.bol.rates.indexOf(l.rate), Math.max(0, X15.indexOf(l.x15)), 0, Math.min(1999, Math.round(S.tokens / 500)), Math.max(0, PATIENCE.indexOf(S.patient)), Math.max(0, Math.min(300, S.bolEvent))];
     PACKS.forEach(function (p, pi) { p.cars.forEach(function (c, ci) { var st = S.cars[pi][ci]; v.push(st.cum, Math.max(1, Math.min(6, st.goal)) - 1); }); });
     return v;
   }
   function packNumber(rad, v) { var n = B(0); for (var i = 0; i < rad.length; i++) n = n * B(rad[i]) + B(v[i]); return n; }
   function unpack(n, rad) { var v = new Array(rad.length); for (var i = rad.length - 1; i >= 0; i--) { var r = B(rad[i]); v[i] = Number(n % r); n = n / r; } return n === B(0) ? v : null; }
-  // v3 codes are made so the whole number ≡ 2 (mod 97); v1/v2 codes ≡ 1. A typo fails both.
-  function withCheck(body) { return body + String((B(99) - (B(body) * B(100)) % B(97)) % B(97)).padStart(2, '0'); }
-  function codeDigits() { return withCheck(packNumber(radicesV3(), digitsV3()).toString().padStart(30, '0')); }
+  // each code length checks to its own value mod 97 (28 → 1, 32 → 2, 36 → 3): a typo can't turn one valid code into another
+  function withCheck(body, target) { return body + String((B(97 + target) - (B(body) * B(100)) % B(97)) % B(97)).padStart(2, '0'); }
+  // the Bolide event estimate is personal: it stays in this browser and is not part of codes or links
+  function codeDigits() { return withCheck(packNumber(radicesV3(), digitsV4().slice(0, 9).concat(digitsV4().slice(10))).toString().padStart(30, '0'), 2); }
   function encodeCode() { return HAS_BIGINT ? codeDigits().replace(/(\d{4})(?=\d)/g, '$1 ') : 'Not available in this browser'; }
   function decodeCode(str) {
     if (!HAS_BIGINT) return null;
     var d = String(str).replace(/\D/g, '');
-    if (d.length !== 32 && d.length !== 28) return null;
-    // 28-digit (v1) codes check to 1, 32-digit codes to 2: a typo can't turn one valid code into another
-    var chk = Number(B(d) % B(97)); if (chk !== (d.length === 28 ? 1 : 2)) return null;
+    var target = { 28: 1, 32: 2, 36: 3 }[d.length]; if (!target) return null;
+    if (Number(B(d) % B(97)) !== target) return null;
     var cfg = freshCfg(), o = { cfg: cfg, cars: [] }, v, k;
     if (d.length === 28) {
       if (d[0] !== '1') return null;
@@ -831,9 +844,10 @@
       o.cars.push([{ cum: 0, goal: 6 }]);
       return o;
     }
-    v = unpack(B(d.slice(0, 30)), radicesV3()); if (!v) return null;
+    var v4 = d.length === 36;
+    v = unpack(B(d.slice(0, v4 ? 34 : 30)), v4 ? radicesV4() : radicesV3()); if (!v) return null;
     o.sel = selOf(v[0] + 1); cfg.bos.price = v[1] ? 900 : 750; cfg.bos.rate = v[2] ? 0.15 : 0.20; cfg.bos.x15 = X15[v[3]];
-    cfg.bol.rate = GROUPS.bol.rates[v[4]]; cfg.bol.x15 = X15[v[5]]; cfg.bol.guar = true; o.tokens = v[7] * 500; o.patient = PATIENCE[v[8]]; k = 9;
+    cfg.bol.rate = GROUPS.bol.rates[v[4]]; cfg.bol.x15 = X15[v[5]]; cfg.bol.guar = true; o.tokens = v[7] * 500; o.patient = PATIENCE[v[8]]; o.bolEvent = v4 ? v[9] : undefined; k = v4 ? 10 : 9;
     PACKS.forEach(function (p) { o.cars.push(p.cars.map(function () { var x = { cum: v[k], goal: v[k + 1] + 1 }; k += 2; return x; })); });
     return o;
   }
@@ -857,6 +871,7 @@
     else S.sel = selOf(MASK_OF_VIEW[pick(o.view, [0, 1, 2, 3], 0)]);
     S.tokens = readTokens(o.tokens || 0);
     S.patient = pick(o.patient, PATIENCE, 0);
+    if (o.bolEvent !== undefined) S.bolEvent = Math.max(0, Math.min(300, parseInt(o.bolEvent, 10) || 0)); // codes/links don't carry it: keep the local estimate
     S.cars = PACKS.map(function (p, pi) {
       return p.cars.map(function (car, ci) {
         var x = (o.cars[pi] || [])[ci] || {}, cum = Math.max(0, Math.min(total(car), parseInt(x.cum, 10) || 0));
@@ -876,7 +891,7 @@
     $('saveState').textContent = v ? (savedAt ? 'Unsaved changes · last saved ' + when(savedAt) : 'Not saved yet') : 'Saved ' + when(savedAt) + ' in this browser';
   }
   function save() {
-    var snap = { sel: S.sel, tokens: S.tokens, patient: S.patient, cfg: S.cfg, cars: S.cars, at: Date.now() };
+    var snap = { sel: S.sel, tokens: S.tokens, patient: S.patient, bolEvent: S.bolEvent, cfg: S.cfg, cars: S.cars, at: Date.now() };
     if (store(function (ls) { ls.setItem(KEY, JSON.stringify(snap)); return true; })) { savedAt = snap.at; setDirty(false); toast('Saved'); }
     else toast('This browser blocks saving here. Use the backup code or a share link instead.');
   }
@@ -887,7 +902,7 @@
     try {
       var q = new URLSearchParams(location.search).get('code');
       if (q) return q;
-      var m = /^#code-(\d{28,32})$/.exec(location.hash);
+      var m = /^#code-(\d{28,36})$/.exec(location.hash);
       return m ? m[1] : null;
     } catch (e) { return null; }
   }
@@ -929,7 +944,7 @@
     else toast('That code isn’t valid. Check the digits.');
   });
   $('codeIn').addEventListener('input', function () {
-    var d = $('codeIn').value.replace(/\D/g, '').slice(0, 32), f = d.replace(/(\d{4})(?=\d)/g, '$1 ');
+    var d = $('codeIn').value.replace(/\D/g, '').slice(0, 36), f = d.replace(/(\d{4})(?=\d)/g, '$1 ');
     if (f !== $('codeIn').value) $('codeIn').value = f;
   });
   // focusing a number field selects its value, so the next digit replaces it instead of being added to it
@@ -945,7 +960,7 @@
     var groups = []; L.pis.forEach(function (pi) { var g = PACKS[pi].group; if (groups.indexOf(g) < 0) groups.push(g); });
     var head = groups.map(function (grp) { var g = S.cfg[grp]; return (grp === 'bos' ? 'BOS ' : 'Bolide ') + fmt(g.price) + '/10-pull · ' + Math.round(g.rate * 100) + '% drop' + (g.x15 ? ' · 15-BP ' + (g.x15 * 100).toFixed(1) + '%' : ''); }).join(' | ');
     var cars = L.pis.map(function (pi, j) { return PACKS[pi].cars.map(function (c, ci) { return '• ' + c.short + ': ' + stateLabel(c, S.cars[pi][ci].cum) + ' → ' + goalLabel(c, Math.max(S.cars[pi][ci].goal, 1)) + ' (' + L.res[j].need[ci] + ' BP)'; }).join('\n'); }).join('\n');
-    return head + (S.patient ? ' | patient: +' + S.patient + ' BP per BOS car from the Bolide event' : '') + '\n' + cars + '\nTypical ' + fmt(L.c50) + ' tokens · Safe ' + fmt(L.c90) + (L.tokens > 0 ? '\nWith ' + fmt(L.tokens) + ' tokens: ' + L.chLabel + ' chance' : '');
+    return head + (S.patient ? ' | event: +' + S.patient + ' BP per BOS car' : '') + (S.bolEvent ? ' | event: Bolide +' + S.bolEvent + ' BP' : '') + '\n' + cars + '\nTypical ' + fmt(L.c50) + ' tokens · Safe ' + fmt(L.c90) + (L.tokens > 0 ? '\nWith ' + fmt(L.tokens) + ' tokens: ' + L.chLabel + ' chance' : '');
   }
   function copy(t, msg) {
     var ok = function () { toast(msg); };
