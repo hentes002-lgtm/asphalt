@@ -420,7 +420,7 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
     <ol>
       <li><b>Tap one ✕ tile</b> from your game. The second one is placed automatically, since the game always puts it at the 180° mirror position.</li>
       <li><b>Set-up:</b> copy any tiles already open in your game by tapping them here: <b>1×</b> opened, <b>2×</b> !, <b>3×</b> gift, <b>4×</b> hidden again. New game? Skip it. Then tap <b>2 · Coaching</b> in the switch under the board. You can go back any time with <b>1 · Set up</b>.</li>
-      <li><b>The Advisor is on from the start</b> (<b>Hide advice</b> switches it off): it plays every possible gift layout to the end and turns the click that finishes the board in the fewest clicks on average green. Usually that's the highest chance, but not always. Several green tiles are equally good. Click it in your game.</li>
+      <li><b>The Advisor is on from the start</b> (<b>Hide advice</b> switches it off): it plays every possible gift layout to the end, looking 2–3 clicks ahead at the most promising tiles, and turns the click that finishes the board in the fewest clicks on average green. Usually that's the highest chance, but not always. Several green tiles are equally good. Click it in your game.</li>
       <li>Tap the same tile here and pick what your game showed: <b>Gift</b>, <b>!</b> or <b>Opened</b>. Each button shows how likely that result was.</li>
       <li><b>Gift found:</b> the <b>!</b> tiles next to it flash as <b>!?</b>. Say whether each still shows <b>!</b> or turned plain. When the answer is already certain, the coach fills it in for you, flashes the tile and tells you what it filled in.</li>
       <li><b>Save</b> keeps the board on this device only (browser storage: no cookies, no tracking, nothing sent). It lights up when there's unsaved progress, and only saves when you tap it. Next time you open the page, it offers to load the saved board. <b>Delete</b> removes it.</li>
@@ -453,7 +453,7 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
       <li>It picks the tile with the lowest number. Every number is reachable by actual play, so looking deeper can only lower it.</li>
       <li>The board has exactly 3 symmetries: the left-right mirror, the top-bottom mirror and the 180° turn (checked against every possible mapping). Whenever the board is symmetric, mirror-image tiles get the same value, so all equally good tiles turn green.</li>
       <li>Mirror-image boards are exactly equally hard, but breaking ties in reading order plays some of them better than their twin. For those ✕ starts the Advisor thinks on the mirrored board and flips its answer back, so twin boards always score the same.</li>
-      <li>The first three hints (for every ✕ pair, after every result of the Advisor's first two clicks) are precomputed 3 clicks deep, so they are instant, even on a phone. For C2+C7 and C4+C5, 2 clicks deep measured better there, so those use that. Later hints are calculated in your browser, in the background. On a large board, after a different first click, it uses the faster one-step look so the hint stays quick.</li>
+      <li>The first three hints (for every ✕ pair, after every result of the Advisor's first two clicks) are precomputed 3 clicks deep (2 for C2+C7 and C4+C5, which measured better that way), so they are instant, even on a phone. Later hints are calculated in your browser, in the background. On a large board, after a different first click, it uses the faster one-step look so the hint stays quick.</li>
     </ul>
 
     <h3>Results</h3>
@@ -465,35 +465,27 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
         <tr><td>Highest chance, ties in reading order</td><td class="avg"><span class="num">12.50</span><span class="hb" aria-hidden="true"><i style="width:100.0%"></i></span></td><td>13</td><td>2.46</td><td>3–17</td><td>54.8%</td><td>31.0%</td></tr>
         <tr><td>Most hidden neighbours ("most hexes")</td><td class="avg"><span class="num">11.32</span><span class="hb" aria-hidden="true"><i style="width:90.5%"></i></span></td><td>11</td><td>1.81</td><td>3–18</td><td>25.5%</td><td>53.0%</td></tr>
         <tr><td>Most layouts ruled out (▼ in Statistics view)</td><td class="avg"><span class="num">10.39</span><span class="hb" aria-hidden="true"><i style="width:83.1%"></i></span></td><td>11</td><td>1.82</td><td>3–16</td><td>11.3%</td><td>71.1%</td></tr>
-        <tr><td>First Advisor: highest chance, ties to most ruled out</td><td class="avg"><span class="num">10.31</span><span class="hb" aria-hidden="true"><i style="width:82.4%"></i></span></td><td>10</td><td>1.82</td><td>3–16</td><td>10.4%</td><td>72.7%</td></tr>
+        <tr><td>Highest chance, ties to most layouts ruled out</td><td class="avg"><span class="num">10.31</span><span class="hb" aria-hidden="true"><i style="width:82.4%"></i></span></td><td>10</td><td>1.82</td><td>3–16</td><td>10.4%</td><td>72.7%</td></tr>
         <tr><td>Highest chance, ties to most hidden neighbours</td><td class="avg"><span class="num">10.27</span><span class="hb" aria-hidden="true"><i style="width:82.1%"></i></span></td><td>10</td><td>1.85</td><td>3–16</td><td>10.7%</td><td>73.5%</td></tr>
-        <tr><td>Previous Advisor: one step ahead</td><td class="avg"><span class="num">10.07</span><span class="hb" aria-hidden="true"><i style="width:80.5%"></i></span></td><td>10</td><td>1.65</td><td>3–15</td><td>4.8%</td><td>80.3%</td></tr>
         <tr class="hl"><td>This Advisor</td><td class="avg"><span class="num">10.03</span><span class="hb" aria-hidden="true"><i style="width:80.2%"></i></span></td><td>10</td><td>1.63</td><td>3–14</td><td>3.9%</td><td>81.5%</td></tr>
       </tbody>
     </table></div>
-    <p class="small">All numbers in decoders per board. Spread (SD) = standard deviation: lower means more predictable boards. Best–worst = fewest and most decoders any board needed. 13+ = share of boards needing 13 or more; ≤ 11 = share finished in 11 or fewer. This Advisor's exact average: 10.0272 (previous: 10.0691).</p>
+    <p class="small">All numbers in decoders per board. Spread (SD) = standard deviation: lower means more predictable boards. Best–worst = fewest and most decoders any board needed. 13+ = share of boards needing 13 or more; ≤ 11 = share finished in 11 or fewer. This Advisor's exact average: 10.0272.</p>
 
     <h3>Clicks per board</h3>
-    <label class="cmp">Compare this Advisor with <select id="cmpSel"><option value="chanceFirst">Highest chance, ties in reading order</option><option value="hexes">Most hidden neighbours ("most hexes")</option><option value="mostInfo">Most layouts ruled out (▼ in Statistics view)</option><option value="classic">First Advisor: highest chance, ties to most ruled out</option><option value="chancehex">Highest chance, ties to most hidden neighbours</option><option value="onestep" selected>Previous Advisor: one step ahead</option></select></label>
+    <label class="cmp">Compare this Advisor with <select id="cmpSel"><option value="chanceFirst">Highest chance, ties in reading order</option><option value="hexes" selected>Most hidden neighbours ("most hexes")</option><option value="mostInfo">Most layouts ruled out (▼ in Statistics view)</option><option value="classic">Highest chance, ties to most layouts ruled out</option><option value="chancehex">Highest chance, ties to most hidden neighbours</option></select></label>
     <div class="tw"><table class="dist">
-      <thead><tr><th>Clicks</th><th>This Advisor</th><th id="cmpHead">Previous Advisor</th><th><span class="sr">Bars</span></th></tr></thead>
+      <thead><tr><th>Clicks</th><th>This Advisor</th><th id="cmpHead">Most hexes</th><th><span class="sr">Bars</span></th></tr></thead>
       <tbody id="distBody"></tbody>
     </table></div>
-    <p class="small"><span class="sw g"></span>This Advisor <span class="sw o"></span><span id="cmpName">Previous Advisor</span></p>
-
-    <h3>Where the gain comes from</h3>
-    <p class="small">This version saves 0.042 decoders per board over the previous one (10.07 → 10.03) by looking 2–3 clicks ahead at the best tiles. The previous one had saved 0.24 over the first Advisor (10.31 → 10.07). Improving one phase at a time shows where that came from:</p>
-    <div class="tw"><table class="gain">
-      <thead><tr><th>Phase</th><th>Decoders saved per board</th></tr></thead>
-      <tbody><tr><td>First click</td><td class="avg"><span class="num">0.020</span><span class="hb" aria-hidden="true"><i style="width:11.8%"></i></span></td></tr><tr><td>Before the 1st gift</td><td class="avg"><span class="num">0.167</span><span class="hb" aria-hidden="true"><i style="width:100.0%"></i></span></td></tr><tr><td>Between the 1st and 2nd gift</td><td class="avg"><span class="num">0.092</span><span class="hb" aria-hidden="true"><i style="width:55.3%"></i></span></td></tr><tr><td>Last gift</td><td class="avg"><span class="num">0.008</span><span class="hb" aria-hidden="true"><i style="width:5.0%"></i></span></td></tr><tr><td>Playing mirror twins the same way</td><td class="avg"><span class="num">0.006</span><span class="hb" aria-hidden="true"><i style="width:3.9%"></i></span></td></tr></tbody>
-    </table></div>
-    <p class="small">The phases were measured separately, so they don't add up exactly to the total. For the last gift, exact perfect play is within about 0.001 of the Advisor, so the endgame is essentially solved.</p>
+    <p class="small"><span class="sw g"></span>This Advisor <span class="sw o"></span><span id="cmpName">Most hidden neighbours ("most hexes")</span></p>
 
     <h3>Checks</h3>
     <ul>
       <li>The engine in this page was compared against an independent simulator: 113 game positions and 160 tile values on symmetric boards, 0 differences.</li>
       <li>Every precomputed hint was recomputed with this page's engine at the same depth: same recommended tiles, and every tile value within 0.0001.</li>
       <li>Every one of the 98,800 boards was played through the full game tree with this page's own engine and precomputed hints, exactly as the page plays: 10.0272 on average.</li>
+      <li>Endgame: with 10 or fewer gift layouts left, perfect play (every continuation solved exactly) gives the same average as the Advisor, so that part is already played perfectly.</li>
       <li>Full games played automatically through this page, on desktop and on a simulated phone, with no errors.</li>
     </ul>
 
@@ -507,7 +499,7 @@ footer .recruit b{color:var(--gold);letter-spacing:.3em}
   <section class="updates" aria-labelledby="updHead">
     <h3 id="updHead">Updates</h3>
     <ul>
-      <li><b>11 Nov 2026</b> · Smarter engine: it now looks 2–3 clicks ahead at the most promising tiles. About <b>10.03</b> decoders per board on average (was 10.07).</li>
+      <li><b>11 Nov 2026</b> · Smarter engine: it now looks 2–3 clicks ahead at the most promising tiles. About <b>10.03</b> decoders per board on average.</li>
       <li><b>6 Nov 2026</b> · A "!" copied in set-up can now be cleared after its gift is found. Answer buttons no longer jump or miss taps on phones. The heatmap note moved below the question panel.</li>
       <li><b>Earlier</b> · Advisor heatmap, Save/Load on this device, one-tap mirrored ✕ start, precomputed first hints.</li>
     </ul>
@@ -1387,7 +1379,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
     } else if (!la) {
       kind = '';
       html = 'Working out the best click…';
-      hint = 'The Advisor plays every possible gift layout to the end. Early in a game this can take a few seconds on a phone.';
+      hint = 'The Advisor plays every possible gift layout to the end. This usually takes under a second; on an older phone it can take a couple of seconds.';
     } else {
       kind = '';
       const chance = t => { const h = adv.split.get(t); return shares(h.G, h.W, h.E, adv.layouts)[0]; };
@@ -1755,7 +1747,7 @@ if (typeof self !== 'undefined' && typeof window === 'undefined' && typeof modul
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && sel >= 0) { sel = -1; render(); } });
 
   /* ---------- Method section: clicks-per-board comparison ---------- */
-  const DIST = {"chanceFirst": {"name": "Highest chance, ties in reading order", "d": {"3": 0.000101, "4": 0.000901, "5": 0.003887, "6": 0.01081, "7": 0.023168, "8": 0.037004, "9": 0.048472, "10": 0.075121, "11": 0.110294, "12": 0.142713, "13": 0.160597, "14": 0.159534, "15": 0.129464, "16": 0.085951, "17": 0.011984}}, "hexes": {"name": "Most hidden neighbours (\"most hexes\")", "d": {"3": 0.000101, "4": 0.000334, "5": 0.001478, "6": 0.005071, "7": 0.015142, "8": 0.039372, "9": 0.088573, "10": 0.160385, "11": 0.219777, "12": 0.214464, "13": 0.148462, "14": 0.075638, "15": 0.025132, "16": 0.005253, "17": 0.000779, "18": 4e-05}}, "mostInfo": {"name": "Most layouts ruled out (▼ in Statistics view)", "d": {"3": 0.000101, "4": 0.000911, "5": 0.005081, "6": 0.017257, "7": 0.042571, "8": 0.086538, "9": 0.143998, "10": 0.197136, "11": 0.217561, "12": 0.175405, "13": 0.088785, "14": 0.02251, "15": 0.002024, "16": 0.000121}}, "classic": {"name": "First Advisor: highest chance, ties to most ruled out", "d": {"3": 0.000101, "4": 0.000911, "5": 0.005395, "6": 0.019069, "7": 0.046741, "8": 0.091164, "9": 0.148634, "10": 0.200435, "11": 0.214666, "12": 0.168623, "13": 0.082733, "14": 0.019818, "15": 0.001619, "16": 9.1e-05}}, "chancehex": {"name": "Highest chance, ties to most hidden neighbours", "d": {"3": 0.000101, "4": 0.000911, "5": 0.005435, "6": 0.019474, "7": 0.050071, "8": 0.09664, "9": 0.152621, "10": 0.201569, "11": 0.208289, "12": 0.15831, "13": 0.079555, "14": 0.023451, "15": 0.00337, "16": 0.000202}}, "onestep": {"name": "Previous Advisor: one step ahead", "d": {"3": 0.000101, "4": 0.000779, "5": 0.004504, "6": 0.018047, "7": 0.049393, "8": 0.100182, "9": 0.165658, "10": 0.227136, "11": 0.237409, "12": 0.148593, "13": 0.044059, "14": 0.004089, "15": 5.1e-05}}, "advisor": {"name": "This Advisor", "d": {"3": 0.000101, "4": 0.000789, "5": 0.004595, "6": 0.0183, "7": 0.049221, "8": 0.101346, "9": 0.169848, "10": 0.232672, "11": 0.238472, "12": 0.145678, "13": 0.036711, "14": 0.002267}}};
+  const DIST = {"chanceFirst": {"name": "Highest chance, ties in reading order", "d": {"3": 0.000101, "4": 0.000901, "5": 0.003887, "6": 0.01081, "7": 0.023168, "8": 0.037004, "9": 0.048472, "10": 0.075121, "11": 0.110294, "12": 0.142713, "13": 0.160597, "14": 0.159534, "15": 0.129464, "16": 0.085951, "17": 0.011984}}, "hexes": {"name": "Most hidden neighbours (\"most hexes\")", "d": {"3": 0.000101, "4": 0.000334, "5": 0.001478, "6": 0.005071, "7": 0.015142, "8": 0.039372, "9": 0.088573, "10": 0.160385, "11": 0.219777, "12": 0.214464, "13": 0.148462, "14": 0.075638, "15": 0.025132, "16": 0.005253, "17": 0.000779, "18": 4e-05}}, "mostInfo": {"name": "Most layouts ruled out (▼ in Statistics view)", "d": {"3": 0.000101, "4": 0.000911, "5": 0.005081, "6": 0.017257, "7": 0.042571, "8": 0.086538, "9": 0.143998, "10": 0.197136, "11": 0.217561, "12": 0.175405, "13": 0.088785, "14": 0.02251, "15": 0.002024, "16": 0.000121}}, "classic": {"name": "Highest chance, ties to most layouts ruled out", "d": {"3": 0.000101, "4": 0.000911, "5": 0.005395, "6": 0.019069, "7": 0.046741, "8": 0.091164, "9": 0.148634, "10": 0.200435, "11": 0.214666, "12": 0.168623, "13": 0.082733, "14": 0.019818, "15": 0.001619, "16": 9.1e-05}}, "chancehex": {"name": "Highest chance, ties to most hidden neighbours", "d": {"3": 0.000101, "4": 0.000911, "5": 0.005435, "6": 0.019474, "7": 0.050071, "8": 0.09664, "9": 0.152621, "10": 0.201569, "11": 0.208289, "12": 0.15831, "13": 0.079555, "14": 0.023451, "15": 0.00337, "16": 0.000202}}, "advisor": {"name": "This Advisor", "d": {"3": 0.000101, "4": 0.000789, "5": 0.004595, "6": 0.0183, "7": 0.049221, "8": 0.101346, "9": 0.169848, "10": 0.232672, "11": 0.238472, "12": 0.145678, "13": 0.036711, "14": 0.002267}}};
   function renderDist() {
     const k = $('cmpSel').value, me = DIST.advisor.d, ot = DIST[k].d;
     const top = Math.max(...Object.values(me), ...Object.values(ot));
